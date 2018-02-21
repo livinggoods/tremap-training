@@ -30,6 +30,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String TABLE_TRAINING_TRAINERS = "training_trainers";
     private static final String TABLE_TRAINING_CLASSES = "training_classes";
     private static final String TABLE_TRAINING_TRAINEES = "trainees";
+    private static final String TABLE_USERS = "users";
 
     // fields for Training
     private static final String ID = "id";
@@ -107,6 +108,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String TRAINING_SESSION_TYPE_ID = "training_session_type_id";
     private static final String TRAINING_ID = "training_id";
     private static final String ATTENDED = "attended";
+
     public static final String CREATE_TABLE_SESSION_ATTENDANCE ="CREATE TABLE " + TABLE_SESSION_ATTENDANCE + "("
             + ID + varchar_field +", "
             + TRAINING_SESSION_ID + varchar_field + ", "
@@ -235,6 +237,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             + ARCHIVED + integer_field + ", "
             + REGISTRATION + text_field + ", " //will be storing the JSON
             + COMMENT + text_field + "); ";
+
+    private static final String EMAIL= "email";
+    private static final String USERNAME = "username";
+    private static final String PASSWORD = "password";
+
+    private static final String CREATE_TABLE_USERS="CREATE TABLE " + TABLE_USERS + "("
+            + ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+            + EMAIL + varchar_field + ", "
+            + USERNAME + varchar_field + ", "
+            + PASSWORD + varchar_field + ", "
+            + NAME + varchar_field + ", "
+            + COUNTRY + varchar_field + "); ";
 
     public DatabaseHelper(Context context){
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
