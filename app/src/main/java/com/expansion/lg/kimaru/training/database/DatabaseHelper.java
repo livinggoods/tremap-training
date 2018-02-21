@@ -256,7 +256,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate (SQLiteDatabase db){
-
+        db.execSQL(CREATE_TABLE_TRAINING);
+        db.execSQL(CREATE_TABLE_TRAINING_VENUE);
+        db.execSQL(CREATE_TABLE_SESSION_ATTENDANCE);
+        db.execSQL(CREATE_TABLE_SESSION_TOPIC);
+        db.execSQL(CREATE_TABLE_TRAINING_SESSION);
+        db.execSQL(CREATE_TABLE_TRAINING_SESSION_TYPE);
+        db.execSQL(CREATE_TABLE_TRAINING_STATUS);
+        db.execSQL(CREATE_TABLE_TRAINING_ROLES);
+        db.execSQL(CREATE_TABLE_TRAINING_TRAINERS);
+        db.execSQL(CREATE_TABLE_TRAINING_CLASSES);
+        db.execSQL(CREATE_TABLE_TRAINING_TRAINEE);
+        db.execSQL(CREATE_TABLE_USERS);
     }
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion){
