@@ -1,5 +1,7 @@
 package com.expansion.lg.kimaru.training.objs;
 
+import org.json.JSONObject;
+
 /**
  * Created by kimaru on 2/21/18.
  */
@@ -9,6 +11,7 @@ public class TrainingTrainee {
     Integer class_id, added_by, branch, cohort;
     Long clientTime;
     boolean archived;
+    JSONObject registration;
 
     public TrainingTrainee() {
     }
@@ -16,7 +19,7 @@ public class TrainingTrainee {
     public TrainingTrainee(String id, String registrationId, String dateCreated,
                            String trainingId, String country, String chpCode, String comment,
                            Integer class_id, Integer added_by, Integer branch, Integer cohort,
-                           Long clientTime, boolean archived) {
+                           Long clientTime, boolean archived, JSONObject registration) {
         this.id = id;
         this.registrationId = registrationId;
         this.dateCreated = dateCreated;
@@ -30,6 +33,7 @@ public class TrainingTrainee {
         this.cohort = cohort;
         this.clientTime = clientTime;
         this.archived = archived;
+        this.registration = registration;
     }
 
     public String getId() {
@@ -134,5 +138,13 @@ public class TrainingTrainee {
 
     public void setArchived(boolean archived) {
         this.archived = archived;
+    }
+
+    public JSONObject getRegistration() {
+        return registration;
+    }
+
+    public void setRegistration(JSONObject registration) {
+        this.registration = registration;
     }
 }

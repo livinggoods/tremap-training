@@ -219,6 +219,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String BRANCH = "branch";
     public static final String COHORT = "cohort";
     public static final String CHP_CODE = "chp_code";
+    public static final String REGISTRATION = "registration";
     public static final String CREATE_TABLE_TRAINING_TRAINEE ="CREATE TABLE " + TABLE_TRAINING_TRAINEES + "("
             + ID + varchar_field +", "
             + REGISTRATION_ID + varchar_field + ", "
@@ -232,6 +233,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             + COHORT + real_field + ", "
             + CHP_CODE + real_field + ", "
             + ARCHIVED + integer_field + ", "
+            + REGISTRATION + text_field + ", " //will be storing the JSON
             + COMMENT + text_field + "); ";
 
     public DatabaseHelper(Context context){
