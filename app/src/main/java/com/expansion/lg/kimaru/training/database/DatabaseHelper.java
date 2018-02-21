@@ -31,6 +31,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String TABLE_TRAINING_CLASSES = "training_classes";
     private static final String TABLE_TRAINING_TRAINEES = "trainees";
     private static final String TABLE_USERS = "users";
+    private static final String TABLE_TRAINING_COMMENTS = "training_comments";
 
     // fields for Training
     private static final String ID = "id";
@@ -238,6 +239,17 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             + REGISTRATION + text_field + ", " //will be storing the JSON
             + COMMENT + text_field + "); ";
 
+    public static final String CREATE_TABLE_TRAINEE_COMMENTS ="CREATE TABLE " + TABLE_TRAINING_COMMENTS + "("
+            + ID + varchar_field +", "
+            + TRAINEE_ID + varchar_field + ", "
+            + TRAINING_ID + varchar_field + ", "
+            + COUNTRY + varchar_field + ", "
+            + ADDED_BY + integer_field + ", "
+            + DATE_CREATED + " DATETIME " + ", "
+            + CLIENT_TIME + real_field + ", "
+            + ARCHIVED + integer_field + ", "
+            + COMMENT + text_field + "); ";
+
     private static final String EMAIL= "email";
     private static final String USERNAME = "username";
     private static final String PASSWORD = "password";
@@ -268,6 +280,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(CREATE_TABLE_TRAINING_CLASSES);
         db.execSQL(CREATE_TABLE_TRAINING_TRAINEE);
         db.execSQL(CREATE_TABLE_USERS);
+        db.execSQL(CREATE_TABLE_TRAINEE_COMMENTS);
     }
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion){
