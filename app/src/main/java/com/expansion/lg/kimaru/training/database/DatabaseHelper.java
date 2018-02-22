@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import com.expansion.lg.kimaru.training.objs.SessionAttendance;
+import com.expansion.lg.kimaru.training.objs.SessionTopic;
 import com.expansion.lg.kimaru.training.objs.Training;
 import com.expansion.lg.kimaru.training.objs.TrainingVenue;
 
@@ -305,6 +306,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     String[] sessionAttendanceColumns = new String[]{ID, TRAINING_SESSION_ID, TRAINEE_ID,
             TRAINING_SESSION_TYPE_ID, TRAINING_ID, COUNTRY, ATTENDED, CREATED_BY, CLIENT_TIME,
             DATE_CREATED, META_DATA, COMMENT, ARCHIVED};
+    String[] sessionTopicColumns = new String[] {ID, NAME, COUNTRY, ARCHIVED,ADDED_BY, DATE_ADDED,
+            META_DATA, COMMENT};
 
     /**
      * **************************************
@@ -364,7 +367,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         String[] whereArgs = new String[] {
                 trainingId,
         };
-        Cursor cursor=db.query(TABLE_TRAINING,trainingColumns,whereClause,whereArgs,null,null,null,null);
+        Cursor cursor=db.query(TABLE_TRAINING,trainingColumns,whereClause,whereArgs,null,
+                null,null,null);
         if (!(cursor.moveToFirst()) || cursor.getCount() ==0){
             return null;
         }else{
@@ -398,7 +402,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
      */
     public boolean trainingExists(Training training) {
         SQLiteDatabase db = getReadableDatabase();
-        Cursor cur = db.rawQuery("SELECT "+ID+" FROM " + TABLE_TRAINING + " WHERE "+ID+" = '" + training.getId() + "'", null);
+        Cursor cur = db.rawQuery("SELECT "+ID+" FROM " + TABLE_TRAINING + " WHERE "+ID+" = '"
+                + training.getId() + "'", null);
         boolean exist = (cur.getCount() > 0);
         cur.close();
         return exist;
@@ -463,7 +468,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         if(trainingVenueExists(trainingVenue)){
             id = db.update(TABLE_TRAINING_VENUE, cv, ID+"='"+trainingVenue.getId()+"'", null);
         }else{
-            id = db.insertWithOnConflict(TABLE_TRAINING_VENUE, null, cv, SQLiteDatabase.CONFLICT_REPLACE);
+            id = db.insertWithOnConflict(TABLE_TRAINING_VENUE, null, cv,
+                    SQLiteDatabase.CONFLICT_REPLACE);
         }
         db.close();
         return id;
@@ -476,7 +482,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
      */
     public boolean trainingVenueExists(TrainingVenue trainingVenue) {
         SQLiteDatabase db = getReadableDatabase();
-        Cursor cur = db.rawQuery("SELECT "+ID+" FROM " + TABLE_TRAINING_VENUE + " WHERE "+ID+" = '" + trainingVenue.getId() + "'", null);
+        Cursor cur = db.rawQuery("SELECT "+ID+" FROM " + TABLE_TRAINING_VENUE + " WHERE "+ID+" = '"
+                + trainingVenue.getId() + "'", null);
         boolean exist = (cur.getCount() > 0);
         cur.close();
         return exist;
@@ -489,7 +496,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         String[] whereArgs = new String[] {
                 trainingVenueId,
         };
-        Cursor cursor=db.query(TABLE_TRAINING_VENUE,trainingVenueColumns,whereClause,whereArgs,null,null,null,null);
+        Cursor cursor=db.query(TABLE_TRAINING_VENUE,trainingVenueColumns,whereClause,whereArgs,
+                null,null,null,null);
         if (!(cursor.moveToFirst()) || cursor.getCount() ==0){
             return null;
         }else{
@@ -548,9 +556,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SessionAttendance sessionAttendance = new SessionAttendance();
 
         sessionAttendance.setId(cursor.getString(cursor.getColumnIndex(ID)));
-        sessionAttendance.setTrainingSessionId(cursor.getString(cursor.getColumnIndex(TRAINING_SESSION_ID)));
+        sessionAttendance.setTrainingSessionId(cursor.getString(cursor.getColumnIndex(
+                TRAINING_SESSION_ID)));
         sessionAttendance.setTraineeId(cursor.getString(cursor.getColumnIndex(TRAINEE_ID)));
-        sessionAttendance.setTrainingSessionTypeId(cursor.getInt(cursor.getColumnIndex(TRAINING_SESSION_TYPE_ID)));
+        sessionAttendance.setTrainingSessionTypeId(cursor.getInt(cursor.getColumnIndex(
+                TRAINING_SESSION_TYPE_ID)));
         sessionAttendance.setTrainingId(cursor.getString(cursor.getColumnIndex(TRAINING_ID)));
         sessionAttendance.setCountry(cursor.getString(cursor.getColumnIndex(COUNTRY)));
         sessionAttendance.setAttended(cursor.getInt(cursor.getColumnIndex(ATTENDED))==1);
@@ -581,9 +591,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         cv.put(ARCHIVED, sessionAttendance.isArchived());
         long id;
         if(sessionAttendanceExists(sessionAttendance)){
-            id = db.update(TABLE_SESSION_ATTENDANCE, cv, ID+"='"+sessionAttendance.getId()+"'", null);
+            id = db.update(TABLE_SESSION_ATTENDANCE, cv, ID+"='"+sessionAttendance.getId()+"'",
+                    null);
         }else{
-            id = db.insertWithOnConflict(TABLE_SESSION_ATTENDANCE, null, cv, SQLiteDatabase.CONFLICT_REPLACE);
+            id = db.insertWithOnConflict(TABLE_SESSION_ATTENDANCE, null, cv,
+                    SQLiteDatabase.CONFLICT_REPLACE);
         }
         db.close();
         return id;
@@ -591,7 +603,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public boolean sessionAttendanceExists(SessionAttendance sessionAttendance) {
         SQLiteDatabase db = getReadableDatabase();
-        Cursor cur = db.rawQuery("SELECT "+ID+" FROM " + TABLE_SESSION_ATTENDANCE + " WHERE "+ID+" = '" + sessionAttendance.getId() + "'", null);
+        Cursor cur = db.rawQuery("SELECT "+ID+" FROM " + TABLE_SESSION_ATTENDANCE + " WHERE "+
+                ID+" = '" + sessionAttendance.getId() + "'", null);
         boolean exist = (cur.getCount() > 0);
         cur.close();
         return exist;
@@ -604,7 +617,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         String[] whereArgs = new String[] {
                 sessionAttendanceId,
         };
-        Cursor cursor=db.query(TABLE_SESSION_ATTENDANCE, sessionAttendanceColumns, whereClause,whereArgs,null,null,null,null);
+        Cursor cursor=db.query(TABLE_SESSION_ATTENDANCE, sessionAttendanceColumns, whereClause,
+                whereArgs,null,null,null,null);
         if (!(cursor.moveToFirst()) || cursor.getCount() ==0){
             return null;
         }else{
@@ -615,10 +629,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
-    public List<SessionAttendance> getSessionAttendance(){
+    public List<SessionAttendance> getSessionAttendances(){
         SQLiteDatabase db = getWritableDatabase();
-        Cursor cursor = db.query(TABLE_SESSION_ATTENDANCE,sessionAttendanceColumns,null,null,null,null,
-                null,null);
+        Cursor cursor = db.query(TABLE_SESSION_ATTENDANCE,sessionAttendanceColumns,null,null,
+                null,null,null,null);
         List<SessionAttendance> sessionAttendanceList = new ArrayList<>();
         for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()){
             SessionAttendance sessionAttendance = cursorToSessionAttendance(cursor);
@@ -626,5 +640,88 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
         cursor.close();
         return sessionAttendanceList;
+    }
+
+
+    /**
+     * ************************************
+     * CREATE_TABLE_SESSION_TOPIC         *
+     * ************************************
+     */
+
+    private SessionTopic cursorToSessionTopic(Cursor cursor){
+        SessionTopic sessionTopic = new SessionTopic();
+        sessionTopic.setId(cursor.getInt(cursor.getColumnIndex(ID)));
+        sessionTopic.setName(cursor.getString(cursor.getColumnIndex(NAME)));
+        sessionTopic.setCountry(cursor.getString(cursor.getColumnIndex(COUNTRY)));
+        sessionTopic.setArchived(cursor.getInt(cursor.getColumnIndex(ARCHIVED))==1);
+        sessionTopic.setAddedBy(cursor.getInt(cursor.getColumnIndex(ADDED_BY)));
+        sessionTopic.setDateAdded(cursor.getString(cursor.getColumnIndex(DATE_ADDED)));
+        sessionTopic.setMetaData(cursor.getString(cursor.getColumnIndex(META_DATA)));
+        sessionTopic.setComment(cursor.getString(cursor.getColumnIndex(COMMENT)));
+        return sessionTopic;
+    }
+
+    public long addSessionTopic(SessionTopic sessionTopic){
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put(ID, sessionTopic.getId());
+        cv.put(NAME, sessionTopic.getName());
+        cv.put(COUNTRY, sessionTopic.getCountry());
+        cv.put(ARCHIVED, sessionTopic.isArchived());
+        cv.put(ADDED_BY, sessionTopic.getAddedBy());
+        cv.put(DATE_ADDED, sessionTopic.getDateAdded());
+        cv.put(META_DATA, sessionTopic.getMetaData());
+        cv.put(COMMENT, sessionTopic.getComment());
+        long id;
+        if(sessionTopicExists(sessionTopic)){
+            id = db.update(TABLE_SESSION_TOPIC, cv, ID+"='"+sessionTopic.getId()+"'", null);
+        }else{
+            id = db.insertWithOnConflict(TABLE_SESSION_TOPIC, null, cv,
+                    SQLiteDatabase.CONFLICT_REPLACE);
+        }
+        db.close();
+        return id;
+    }
+
+    public boolean sessionTopicExists(SessionTopic sessionTopic) {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cur = db.rawQuery("SELECT "+ID+" FROM " + TABLE_SESSION_TOPIC + " WHERE "+ID+" = '"
+                + sessionTopic.getId() + "'", null);
+        boolean exist = (cur.getCount() > 0);
+        cur.close();
+        return exist;
+
+    }
+
+    public SessionTopic getSessionTopicById(String sessionTopicId){
+        SQLiteDatabase db = getWritableDatabase();
+        String whereClause = ID +" = ?";
+        String[] whereArgs = new String[] {
+                sessionTopicId,
+        };
+        Cursor cursor=db.query(TABLE_SESSION_TOPIC, sessionTopicColumns, whereClause,
+                whereArgs,null,null,null,null);
+        if (!(cursor.moveToFirst()) || cursor.getCount() ==0){
+            return null;
+        }else{
+
+            SessionTopic sessionTopic = cursorToSessionTopic(cursor);
+            cursor.close();
+            return sessionTopic;
+        }
+    }
+
+    public List<SessionTopic> getSessionTopics(){
+        SQLiteDatabase db = getWritableDatabase();
+        Cursor cursor = db.query(TABLE_SESSION_TOPIC,sessionTopicColumns,null,null,
+                null,null,null,null);
+        List<SessionTopic> sessionTopicList = new ArrayList<>();
+        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()){
+            SessionTopic sessionTopic = cursorToSessionTopic(cursor);
+            sessionTopicList.add(sessionTopic);
+        }
+        cursor.close();
+        return sessionTopicList;
     }
 }
