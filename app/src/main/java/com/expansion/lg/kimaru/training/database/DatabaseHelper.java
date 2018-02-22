@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import com.expansion.lg.kimaru.training.objs.Training;
+import com.expansion.lg.kimaru.training.objs.TrainingVenue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -305,6 +306,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             TRAINING_STATUS_ID, CLIENT_TIME, CREATED_BY, DATE_CREATED, ARCHIVED, COMMENT,
             DATE_COMMENCED, DATE_COMPLETED
     };
+    String [] trainingVenueColumns = new String[] {ID, NAME, MAPPING, LAT, LON, INSPECTED, COUNTRY,
+            SELECTED, CAPACITY, DATE_ADDED, ADDED_BY, CLIENT_TIME, META_DATA, ARCHIVED};
     /**
      *
      * @param training
@@ -390,7 +393,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
      */
     public boolean trainingExists(Training training) {
         SQLiteDatabase db = getReadableDatabase();
-        Cursor cur = db.rawQuery("SELECT id FROM " + TABLE_TRAINING + " WHERE "+ID+" = '" + training.getId() + "'", null);
+        Cursor cur = db.rawQuery("SELECT "+ID+" FROM " + TABLE_TRAINING + " WHERE "+ID+" = '" + training.getId() + "'", null);
         boolean exist = (cur.getCount() > 0);
         cur.close();
         return exist;
@@ -427,6 +430,107 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         training.setDateCompleted(cursor.getLong(cursor.getColumnIndex(DATE_COMPLETED)));
         return training;
     }
-    
+
+    /**
+     * ********************************************
+     * Training Venue                             *
+     * ********************************************
+     */
+
+    public long addTrainingVenue(TrainingVenue trainingVenue){
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put(ID, trainingVenue.getId());
+        cv.put(NAME, trainingVenue.getName());
+        cv.put(MAPPING, trainingVenue.getMapping());
+        cv.put(LAT, trainingVenue.getLat());
+        cv.put(LON, trainingVenue.getLon());
+        cv.put(INSPECTED, trainingVenue.getInspected());
+        cv.put(COUNTRY, trainingVenue.getCountry());
+        cv.put(SELECTED, trainingVenue.isSelected());
+        cv.put(CAPACITY, trainingVenue.getCapacity());
+        cv.put(DATE_ADDED, trainingVenue.getDateAdded());
+        cv.put(ADDED_BY, trainingVenue.getAddedBy());
+        cv.put(CLIENT_TIME, trainingVenue.getClientTime());
+        cv.put(META_DATA, trainingVenue.getMetaData());
+        cv.put(ARCHIVED, trainingVenue.isArchived());
+        long id;
+        if(trainingVenueExists(trainingVenue)){
+            id = db.update(TABLE_TRAINING_VENUE, cv, ID+"='"+trainingVenue.getId()+"'", null);
+        }else{
+            id = db.insertWithOnConflict(TABLE_TRAINING_VENUE, null, cv, SQLiteDatabase.CONFLICT_REPLACE);
+        }
+        db.close();
+        return id;
+    }
+
+    /**
+     *
+     * @param trainingVenue
+     * @return bool
+     */
+    public boolean trainingVenueExists(TrainingVenue trainingVenue) {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cur = db.rawQuery("SELECT "+ID+" FROM " + TABLE_TRAINING_VENUE + " WHERE "+ID+" = '" + trainingVenue.getId() + "'", null);
+        boolean exist = (cur.getCount() > 0);
+        cur.close();
+        return exist;
+
+    }
+
+    public TrainingVenue getTrainingVenueById(String trainingVenueId){
+        SQLiteDatabase db = getWritableDatabase();
+        String whereClause = ID +" = ?";
+        String[] whereArgs = new String[] {
+                trainingVenueId,
+        };
+        Cursor cursor=db.query(TABLE_TRAINING_VENUE,trainingVenueColumns,whereClause,whereArgs,null,null,null,null);
+        if (!(cursor.moveToFirst()) || cursor.getCount() ==0){
+            return null;
+        }else{
+
+            TrainingVenue trainingVenue = cursorToTrainingVenue(cursor);
+            cursor.close();
+            return trainingVenue;
+        }
+    }
+
+    /**
+     *
+     * @param cursor
+     * @return TrainingVenue
+     */
+    private TrainingVenue cursorToTrainingVenue(Cursor cursor){
+        TrainingVenue trainingVenue = new TrainingVenue();
+        trainingVenue.setId(cursor.getString(cursor.getColumnIndex(ID)));
+        trainingVenue.setName(cursor.getString(cursor.getColumnIndex(NAME)));
+        trainingVenue.setMapping(cursor.getString(cursor.getColumnIndex(MAPPING)));
+        trainingVenue.setLat(cursor.getDouble(cursor.getColumnIndex(LAT)));
+        trainingVenue.setLon(cursor.getDouble(cursor.getColumnIndex(LON)));
+        trainingVenue.setInspected(cursor.getInt(cursor.getColumnIndex(INSPECTED)));
+        trainingVenue.setCountry(cursor.getString(cursor.getColumnIndex(COUNTRY)));
+        trainingVenue.setSelected(cursor.getInt(cursor.getColumnIndex(SELECTED))==1);
+        trainingVenue.setCapacity(cursor.getInt(cursor.getColumnIndex(CAPACITY)));
+        trainingVenue.setDateAdded(cursor.getString(cursor.getColumnIndex(DATE_ADDED)));
+        trainingVenue.setAddedBy(cursor.getInt(cursor.getColumnIndex(ADDED_BY)));
+        trainingVenue.setClientTime(cursor.getLong(cursor.getColumnIndex(CLIENT_TIME)));
+        trainingVenue.setMetaData(cursor.getString(cursor.getColumnIndex(META_DATA)));
+        trainingVenue.setArchived(cursor.getInt(cursor.getColumnIndex(ARCHIVED))==1);
+        return trainingVenue;
+    }
+
+    public List<TrainingVenue> getTrainingVenues(){
+        SQLiteDatabase db = getWritableDatabase();
+        Cursor cursor = db.query(TABLE_TRAINING_VENUE,trainingVenueColumns,null,null,null,null,
+                null,null);
+        List<TrainingVenue> trainingVenueList = new ArrayList<>();
+        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()){
+            TrainingVenue trainingVenue = cursorToTrainingVenue(cursor);
+            trainingVenueList.add(trainingVenue);
+        }
+        cursor.close();
+        return trainingVenueList;
+    }
+
 
 }
