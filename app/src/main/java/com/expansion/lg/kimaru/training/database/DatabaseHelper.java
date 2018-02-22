@@ -10,6 +10,7 @@ import com.expansion.lg.kimaru.training.objs.SessionAttendance;
 import com.expansion.lg.kimaru.training.objs.SessionTopic;
 import com.expansion.lg.kimaru.training.objs.Training;
 import com.expansion.lg.kimaru.training.objs.TrainingClass;
+import com.expansion.lg.kimaru.training.objs.TrainingComment;
 import com.expansion.lg.kimaru.training.objs.TrainingRole;
 import com.expansion.lg.kimaru.training.objs.TrainingSession;
 import com.expansion.lg.kimaru.training.objs.TrainingSessionType;
@@ -338,7 +339,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             TRAINING_ID, COUNTRY, ADDED_BY, DATE_CREATED, CLIENT_TIME, BRANCH, COHORT, CHP_CODE,
             ARCHIVED, REGISTRATION, COMMENT};
     private String [] usersColumns = new String[] {ID, EMAIL, USERNAME, PASSWORD, NAME, COUNTRY};
-    private String [] traineeCommentsColumns = new String[] {ID,TRAINEE_ID, TRAINING_ID,
+    private String [] trainingCommentColumns = new String[] {ID,TRAINEE_ID, TRAINING_ID,
             COUNTRY, ADDED_BY, DATE_CREATED, CLIENT_TIME, ARCHIVED, COMMENT};
 
     /**
@@ -1383,5 +1384,91 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
         cursor.close();
         return trainingTraineeList;
+    }
+
+    /**
+     * ************************************
+     *         TRAINING COMMENTS          *
+     * ************************************
+     */
+
+    private TrainingComment cursorToTrainingComment(Cursor cursor){
+        TrainingComment trainingComment = new TrainingComment();
+        trainingComment.setId(cursor.getString(cursor.getColumnIndex(ID)));
+        trainingComment.setTraineeId(cursor.getString(cursor.getColumnIndex(TRAINEE_ID)));
+        trainingComment.setTrainingId(cursor.getString(cursor.getColumnIndex(TRAINING_ID)));
+        trainingComment.setCountry(cursor.getString(cursor.getColumnIndex(COUNTRY)));
+        trainingComment.setAddedBy(cursor.getInt(cursor.getColumnIndex(ADDED_BY)));
+        trainingComment.setDateCreated(cursor.getString(cursor.getColumnIndex(DATE_CREATED)));
+        trainingComment.setClientTime(cursor.getLong(cursor.getColumnIndex(CLIENT_TIME)));
+        trainingComment.setArchived(cursor.getInt(cursor.getColumnIndex(ARCHIVED))==1);
+        trainingComment.setComment(cursor.getString(cursor.getColumnIndex(COMMENT)));
+
+        return trainingComment;
+    }
+
+    public long addTrainingComment(TrainingComment trainingComment){
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put(ID, trainingComment.getId());
+        cv.put(TRAINEE_ID, trainingComment.getTraineeId());
+        cv.put(TRAINING_ID, trainingComment.getTrainingId());
+        cv.put(COUNTRY, trainingComment.getCountry());
+        cv.put(ADDED_BY, trainingComment.getAddedBy());
+        cv.put(DATE_CREATED, trainingComment.getDateCreated());
+        cv.put(CLIENT_TIME, trainingComment.getClientTime());
+        cv.put(ARCHIVED, trainingComment.isArchived());
+        cv.put(COMMENT, trainingComment.getComment());
+        long id;
+        if(trainingCommentExists(trainingComment)){
+            id = db.update(TABLE_TRAINING_COMMENTS, cv, ID+"='"+trainingComment.getId()+"'",
+                    null);
+        }else{
+            id = db.insertWithOnConflict(TABLE_TRAINING_COMMENTS, null, cv,
+                    SQLiteDatabase.CONFLICT_REPLACE);
+        }
+        db.close();
+        return id;
+    }
+
+    public boolean trainingCommentExists(TrainingComment trainingComment) {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cur = db.rawQuery("SELECT "+ID+" FROM " + TABLE_TRAINING_COMMENTS + " WHERE "+
+                ID+" = '" + trainingComment.getId() + "'", null);
+        boolean exist = (cur.getCount() > 0);
+        cur.close();
+        return exist;
+
+    }
+
+    public TrainingComment getTrainingCommentById(String trainingCommentId){
+        SQLiteDatabase db = getWritableDatabase();
+        String whereClause = ID +" = ?";
+        String[] whereArgs = new String[] {
+                trainingCommentId,
+        };
+        Cursor cursor=db.query(TABLE_TRAINING_COMMENTS, trainingCommentColumns, whereClause,
+                whereArgs,null,null,null,null);
+        if (!(cursor.moveToFirst()) || cursor.getCount() ==0){
+            return null;
+        }else{
+
+            TrainingComment trainingComment = cursorToTrainingComment(cursor);
+            cursor.close();
+            return trainingComment;
+        }
+    }
+
+    public List<TrainingComment> getTrainingComments(){
+        SQLiteDatabase db = getWritableDatabase();
+        Cursor cursor = db.query(TABLE_TRAINING_COMMENTS,trainingCommentColumns,null,null,
+                null,null,null,null);
+        List<TrainingComment> trainingCommentList = new ArrayList<>();
+        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()){
+            TrainingComment trainingComment = cursorToTrainingComment(cursor);
+            trainingCommentList.add(trainingComment);
+        }
+        cursor.close();
+        return trainingCommentList;
     }
 }
