@@ -1,8 +1,15 @@
 package com.expansion.lg.kimaru.training.database;
 
+import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+
+import com.expansion.lg.kimaru.training.objs.Training;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by kimaru on 2/21/18.
@@ -286,4 +293,140 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion){
 
     }
+
+    /**
+     * **************************************
+     * Training                             *
+     * **************************************
+     */
+
+    String [] trainingColumns = new String[]{ID, TRAINING_NAME, COUNTRY, COUNTY_ID, LOCATION_ID,
+            SUBCOUNTY_ID, WARD_ID, DISTRICT, RECRUITMENT_ID, PARISH_ID, LAT, LON, TRAINING_VENUE_ID,
+            TRAINING_STATUS_ID, CLIENT_TIME, CREATED_BY, DATE_CREATED, ARCHIVED, COMMENT,
+            DATE_COMMENCED, DATE_COMPLETED
+    };
+    /**
+     *
+     * @param training
+     * @return id
+     *
+     */
+    public long addTraining(Training training){
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put(ID, training.getId());
+        cv.put(TRAINING_NAME, training.getTrainingName());
+        cv.put(COUNTRY, training.getCountry());
+        cv.put(COUNTY_ID, training.getCountyId());
+        cv.put(LOCATION_ID, training.getLocationId());
+        cv.put(SUBCOUNTY_ID, training.getSubCountyId());
+        cv.put(WARD_ID, training.getWardId());
+        cv.put(DISTRICT, training.getDistrict());
+        cv.put(RECRUITMENT_ID, training.getRecruitmentId());
+        cv.put(PARISH_ID, training.getParishId());
+        cv.put(LAT, training.getLat());
+        cv.put(LON, training.getLon());
+        cv.put(TRAINING_VENUE_ID, training.getTrainingVenueId());
+        cv.put(TRAINING_STATUS_ID, training.getTrainingStatusId());
+        cv.put(CLIENT_TIME, training.getClientTime());
+        cv.put(CREATED_BY, training.getCreatedBy());
+        cv.put(DATE_CREATED, training.getDateCreated());
+        cv.put(ARCHIVED, training.isArchived());
+        cv.put(COMMENT, training.getComment());
+        cv.put(DATE_COMMENCED, training.getDateCommenced());
+        cv.put(DATE_COMPLETED, training.getDateCompleted());
+        long id;
+        if(trainingExists(training)){
+            id = db.update(TABLE_TRAINING, cv, ID+"='"+training.getId()+"'", null);
+        }else{
+            id = db.insertWithOnConflict(TABLE_TRAINING, null, cv, SQLiteDatabase.CONFLICT_REPLACE);
+        }
+        db.close();
+        return id;
+    }
+
+    /**
+     *
+     * @param trainingId
+     * @return training
+     */
+    public Training getTrainingById(String trainingId){
+        SQLiteDatabase db = getWritableDatabase();
+        String whereClause = ID +" = ?";
+        String[] whereArgs = new String[] {
+                trainingId,
+        };
+        Cursor cursor=db.query(TABLE_TRAINING,trainingColumns,whereClause,whereArgs,null,null,null,null);
+        if (!(cursor.moveToFirst()) || cursor.getCount() ==0){
+            return null;
+        }else{
+
+            Training training = cursorToTraining(cursor);
+            cursor.close();
+            return training;
+        }
+    }
+
+    /**
+     *
+     * @return Trainings
+     */
+    public List<Training> getTrainings(){
+        SQLiteDatabase db = getWritableDatabase();
+        Cursor cursor = db.query(TABLE_TRAINING,trainingColumns,null,null,null,null,null,null);
+        List<Training> trainingList = new ArrayList<>();
+        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()){
+            Training training = cursorToTraining(cursor);
+            trainingList.add(training);
+        }
+        cursor.close();
+        return trainingList;
+    }
+
+    /**
+     *
+     * @param training
+     * @return bool
+     */
+    public boolean trainingExists(Training training) {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cur = db.rawQuery("SELECT id FROM " + TABLE_TRAINING + " WHERE "+ID+" = '" + training.getId() + "'", null);
+        boolean exist = (cur.getCount() > 0);
+        cur.close();
+        return exist;
+
+    }
+
+    /**
+     *
+     * @param cursor
+     * @return Training
+     */
+    private Training cursorToTraining(Cursor cursor){
+        Training training = new Training();
+        training.setId(cursor.getString(cursor.getColumnIndex(ID)));
+        training.setTrainingName(cursor.getString(cursor.getColumnIndex(TRAINING_NAME)));
+        training.setCountry(cursor.getString(cursor.getColumnIndex(COUNTRY)));
+        training.setCountyId(cursor.getInt(cursor.getColumnIndex(COUNTY_ID)));
+        training.setLocationId(cursor.getInt(cursor.getColumnIndex(LOCATION_ID)));
+        training.setSubCountyId(cursor.getString(cursor.getColumnIndex(SUBCOUNTY_ID)));
+        training.setWardId(cursor.getString(cursor.getColumnIndex(WARD_ID)));
+        training.setDistrict(cursor.getString(cursor.getColumnIndex(DISTRICT)));
+        training.setRecruitmentId(cursor.getString(cursor.getColumnIndex(RECRUITMENT_ID)));
+        training.setParishId(cursor.getString(cursor.getColumnIndex(PARISH_ID)));
+        training.setLat(cursor.getDouble(cursor.getColumnIndex(LAT)));
+        training.setLon(cursor.getDouble(cursor.getColumnIndex(LON)));
+        training.setTrainingVenueId(cursor.getString(cursor.getColumnIndex(TRAINING_VENUE_ID)));
+        training.setTrainingStatusId(cursor.getInt(cursor.getColumnIndex(TRAINING_STATUS_ID)));
+        training.setClientTime(cursor.getLong(cursor.getColumnIndex(CLIENT_TIME)));
+        training.setCreatedBy(cursor.getInt(cursor.getColumnIndex(CREATED_BY)));
+        training.setDateCreated(cursor.getString(cursor.getColumnIndex(DATE_CREATED)));
+        training.setArchived(cursor.getInt(cursor.getColumnIndex(ARCHIVED))==1);
+        training.setComment(cursor.getString(cursor.getColumnIndex(COMMENT)));
+        training.setDateCommenced(cursor.getLong(cursor.getColumnIndex(DATE_COMMENCED)));
+        training.setDateCompleted(cursor.getLong(cursor.getColumnIndex(DATE_COMPLETED)));
+        return training;
+    }
+    
+
 }
