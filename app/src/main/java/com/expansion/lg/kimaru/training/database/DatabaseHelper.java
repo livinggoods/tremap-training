@@ -9,6 +9,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import com.expansion.lg.kimaru.training.objs.SessionAttendance;
 import com.expansion.lg.kimaru.training.objs.SessionTopic;
 import com.expansion.lg.kimaru.training.objs.Training;
+import com.expansion.lg.kimaru.training.objs.TrainingClass;
 import com.expansion.lg.kimaru.training.objs.TrainingRole;
 import com.expansion.lg.kimaru.training.objs.TrainingSession;
 import com.expansion.lg.kimaru.training.objs.TrainingSessionType;
@@ -1195,5 +1196,91 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
         cursor.close();
         return trainingTrainerList;
+    }
+
+    /**
+     * ************************************
+     *         TRAINING CLASSES           *
+     * ************************************
+     */
+
+    private TrainingClass cursorToTrainingClass(Cursor cursor){
+        TrainingClass trainingClass = new TrainingClass();
+        trainingClass.setId(cursor.getString(cursor.getColumnIndex(ID)));
+        trainingClass.setTrainingId(cursor.getString(cursor.getColumnIndex(TRAINING_ID)));
+        trainingClass.setClassName(cursor.getString(cursor.getColumnIndex(CLASS_NAME)));
+        trainingClass.setCountry(cursor.getString(cursor.getColumnIndex(COUNTRY)));
+        trainingClass.setClientTime(cursor.getString(cursor.getColumnIndex(CLIENT_TIME)));
+        trainingClass.setCreatedBy(cursor.getString(cursor.getColumnIndex(CREATED_BY)));
+        trainingClass.setDateCreated(cursor.getString(cursor.getColumnIndex(DATE_CREATED)));
+        trainingClass.setArchived(cursor.getString(cursor.getColumnIndex(ARCHIVED)));
+        trainingClass.setComment(cursor.getString(cursor.getColumnIndex(COMMENT)));
+        return trainingClass;
+    }
+
+    public long addTrainingClass(TrainingClass trainingClass){
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put(ID, trainingClass.getId());
+        cv.put(TRAINING_ID, trainingClass.getTrainingId());
+        cv.put(CLASS_NAME, trainingClass.getClassName());
+        cv.put(COUNTRY, trainingClass.getCountry());
+        cv.put(CLIENT_TIME, trainingClass.getClientTime());
+        cv.put(CREATED_BY, trainingClass.getCreatedBy());
+        cv.put(DATE_CREATED, trainingClass.getDateCreated());
+        cv.put(ARCHIVED, trainingClass.getArchived());
+        cv.put(COMMENT, trainingClass.getComment());
+
+        long id;
+        if(trainingClassExists(trainingClass)){
+            id = db.update(TABLE_TRAINING_CLASSES, cv, ID+"='"+trainingClass.getId()+"'",
+                    null);
+        }else{
+            id = db.insertWithOnConflict(TABLE_TRAINING_CLASSES, null, cv,
+                    SQLiteDatabase.CONFLICT_REPLACE);
+        }
+        db.close();
+        return id;
+    }
+
+    public boolean trainingClassExists(TrainingClass trainingClass) {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cur = db.rawQuery("SELECT "+ID+" FROM " + TABLE_TRAINING_CLASSES + " WHERE "+
+                ID+" = '" + trainingClass.getId() + "'", null);
+        boolean exist = (cur.getCount() > 0);
+        cur.close();
+        return exist;
+
+    }
+
+    public TrainingClass getTrainingClassById(String trainingClassId){
+        SQLiteDatabase db = getWritableDatabase();
+        String whereClause = ID +" = ?";
+        String[] whereArgs = new String[] {
+                trainingClassId,
+        };
+        Cursor cursor=db.query(TABLE_TRAINING_CLASSES, trainingClassesColumns, whereClause,
+                whereArgs,null,null,null,null);
+        if (!(cursor.moveToFirst()) || cursor.getCount() ==0){
+            return null;
+        }else{
+
+            TrainingClass trainingClass = cursorToTrainingClass(cursor);
+            cursor.close();
+            return trainingClass;
+        }
+    }
+
+    public List<TrainingClass> getTrainingClasss(){
+        SQLiteDatabase db = getWritableDatabase();
+        Cursor cursor = db.query(TABLE_TRAINING_CLASSES,trainingClassesColumns,null,null,
+                null,null,null,null);
+        List<TrainingClass> trainingClassList = new ArrayList<>();
+        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()){
+            TrainingClass trainingClass = cursorToTrainingClass(cursor);
+            trainingClassList.add(trainingClass);
+        }
+        cursor.close();
+        return trainingClassList;
     }
 }
