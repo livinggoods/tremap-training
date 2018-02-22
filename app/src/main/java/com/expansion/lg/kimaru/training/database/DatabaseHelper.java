@@ -18,6 +18,7 @@ import com.expansion.lg.kimaru.training.objs.TrainingStatus;
 import com.expansion.lg.kimaru.training.objs.TrainingTrainee;
 import com.expansion.lg.kimaru.training.objs.TrainingTrainer;
 import com.expansion.lg.kimaru.training.objs.TrainingVenue;
+import com.expansion.lg.kimaru.training.objs.User;
 
 import org.json.JSONObject;
 
@@ -33,11 +34,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final int DATABASE_VERSION = 1;
     private static final String DATABASE_NAME = "training.db";
 
-    public static String varchar_field = " varchar(512) ";
-    public static String integer_field = " integer default 0 ";
-    public static String text_field = " text ";
-    public static String real_field = " REAL ";
-    public static String primary_field = " id INTEGER PRIMARY KEY AUTOINCREMENT ";
+    private static String varchar_field = " varchar(512) ";
+    private static String integer_field = " integer default 0 ";
+    private static String text_field = " text ";
+    private static String real_field = " REAL ";
+    private static String primary_field = " id INTEGER PRIMARY KEY AUTOINCREMENT ";
 
     private static final String TABLE_TRAINING = "training";
     private static final String TABLE_TRAINING_VENUE = "training_venues";
@@ -338,7 +339,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private String [] trainingTraineeColumns = new String[] {ID, REGISTRATION_ID, CLASS_ID,
             TRAINING_ID, COUNTRY, ADDED_BY, DATE_CREATED, CLIENT_TIME, BRANCH, COHORT, CHP_CODE,
             ARCHIVED, REGISTRATION, COMMENT};
-    private String [] usersColumns = new String[] {ID, EMAIL, USERNAME, PASSWORD, NAME, COUNTRY};
+    private String [] userColumns = new String[] {ID, EMAIL, USERNAME, PASSWORD, NAME, COUNTRY};
     private String [] trainingCommentColumns = new String[] {ID,TRAINEE_ID, TRAINING_ID,
             COUNTRY, ADDED_BY, DATE_CREATED, CLIENT_TIME, ARCHIVED, COMMENT};
 
@@ -1470,5 +1471,84 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
         cursor.close();
         return trainingCommentList;
+    }
+
+    /**
+     * ************************************
+     *         TRAINING COMMENTS          *
+     * ************************************
+     */
+
+    private User cursorToUser(Cursor cursor){
+        User user = new User();
+        user.setId(cursor.getInt(cursor.getColumnIndex(ID)));
+        user.setEmail(cursor.getString(cursor.getColumnIndex(EMAIL)));
+        user.setUserName(cursor.getString(cursor.getColumnIndex(USERNAME)));
+        user.setPassWord(cursor.getString(cursor.getColumnIndex(PASSWORD)));
+        user.setName(cursor.getString(cursor.getColumnIndex(NAME)));
+        user.setCountry(cursor.getString(cursor.getColumnIndex(COUNTRY)));
+        return user;
+    }
+
+    public long addUser(User user){
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put(ID, user.getId());
+        cv.put(EMAIL, user.getEmail());
+        cv.put(USERNAME, user.getUserName());
+        cv.put(PASSWORD, user.getPassWord());
+        cv.put(NAME, user.getName());
+        cv.put(COUNTRY, user.getCountry());
+        long id;
+        if(userExists(user)){
+            id = db.update(TABLE_USERS, cv, ID+"='"+user.getId()+"'",
+                    null);
+        }else{
+            id = db.insertWithOnConflict(TABLE_USERS, null, cv,
+                    SQLiteDatabase.CONFLICT_REPLACE);
+        }
+        db.close();
+        return id;
+    }
+
+    public boolean userExists(User user) {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cur = db.rawQuery("SELECT "+ID+" FROM " + TABLE_USERS + " WHERE "+
+                ID+" = '" + user.getId() + "'", null);
+        boolean exist = (cur.getCount() > 0);
+        cur.close();
+        return exist;
+
+    }
+
+    public User getUserById(String userId){
+        SQLiteDatabase db = getWritableDatabase();
+        String whereClause = ID +" = ?";
+        String[] whereArgs = new String[] {
+                userId,
+        };
+        Cursor cursor=db.query(TABLE_USERS, userColumns, whereClause,
+                whereArgs,null,null,null,null);
+        if (!(cursor.moveToFirst()) || cursor.getCount() ==0){
+            return null;
+        }else{
+
+            User user = cursorToUser(cursor);
+            cursor.close();
+            return user;
+        }
+    }
+
+    public List<User> getUsers(){
+        SQLiteDatabase db = getWritableDatabase();
+        Cursor cursor = db.query(TABLE_USERS,userColumns,null,null,
+                null,null,null,null);
+        List<User> userList = new ArrayList<>();
+        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()){
+            User user = cursorToUser(cursor);
+            userList.add(user);
+        }
+        cursor.close();
+        return userList;
     }
 }
