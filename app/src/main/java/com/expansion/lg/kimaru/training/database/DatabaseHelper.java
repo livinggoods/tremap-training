@@ -11,6 +11,7 @@ import com.expansion.lg.kimaru.training.objs.SessionTopic;
 import com.expansion.lg.kimaru.training.objs.Training;
 import com.expansion.lg.kimaru.training.objs.TrainingSession;
 import com.expansion.lg.kimaru.training.objs.TrainingSessionType;
+import com.expansion.lg.kimaru.training.objs.TrainingStatus;
 import com.expansion.lg.kimaru.training.objs.TrainingVenue;
 
 import java.util.ArrayList;
@@ -933,5 +934,90 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
         cursor.close();
         return trainingSessionTypeList;
+    }
+
+    /**
+     * ************************************
+     *           TRAINING_STATUS          *
+     * ************************************
+     */
+
+    private TrainingStatus cursorToTrainingStatus(Cursor cursor){
+        TrainingStatus trainingStatus = new TrainingStatus();
+        trainingStatus.setId(cursor.getInt(cursor.getColumnIndex(ID)));
+        trainingStatus.setName(cursor.getString(cursor.getColumnIndex(NAME)));
+        trainingStatus.setArchived(cursor.getInt(cursor.getColumnIndex(ARCHIVED))==1);
+        trainingStatus.setReadonly(cursor.getInt(cursor.getColumnIndex(READONLY))==1);
+        trainingStatus.setCountry(cursor.getString(cursor.getColumnIndex(COUNTRY)));
+        trainingStatus.setClientTime(cursor.getLong(cursor.getColumnIndex(CLIENT_TIME)));
+        trainingStatus.setCreatedBy(cursor.getInt(cursor.getColumnIndex(CREATED_BY)));
+        trainingStatus.setDateCreated(cursor.getLong(cursor.getColumnIndex(DATE_CREATED)));
+        trainingStatus.setComment(cursor.getString(cursor.getColumnIndex(COMMENT)));
+        return trainingStatus;
+    }
+
+    public long addTrainingStatus(TrainingStatus trainingStatus){
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put(ID, trainingStatus.getId());
+        cv.put(NAME, trainingStatus.getName());
+        cv.put(ARCHIVED, trainingStatus.isArchived());
+        cv.put(READONLY, trainingStatus.isReadonly());
+        cv.put(COUNTRY, trainingStatus.getCountry());
+        cv.put(CLIENT_TIME, trainingStatus.getClientTime());
+        cv.put(CREATED_BY, trainingStatus.getCreatedBy());
+        cv.put(DATE_CREATED, trainingStatus.getDateCreated());
+        cv.put(COMMENT, trainingStatus.getComment());
+        long id;
+        if(trainingStatusExists(trainingStatus)){
+            id = db.update(TABLE_TRAINING_STATUS, cv, ID+"='"+trainingStatus.getId()+"'",
+                    null);
+        }else{
+            id = db.insertWithOnConflict(TABLE_TRAINING_STATUS, null, cv,
+                    SQLiteDatabase.CONFLICT_REPLACE);
+        }
+        db.close();
+        return id;
+    }
+
+    public boolean trainingStatusExists(TrainingStatus trainingStatus) {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cur = db.rawQuery("SELECT "+ID+" FROM " + TABLE_TRAINING_STATUS + " WHERE "+
+                ID+" = '" + trainingStatus.getId() + "'", null);
+        boolean exist = (cur.getCount() > 0);
+        cur.close();
+        return exist;
+
+    }
+
+    public TrainingStatus getTrainingStatusById(String trainingStatusId){
+        SQLiteDatabase db = getWritableDatabase();
+        String whereClause = ID +" = ?";
+        String[] whereArgs = new String[] {
+                trainingStatusId,
+        };
+        Cursor cursor=db.query(TABLE_TRAINING_STATUS, trainingStatusColumns, whereClause,
+                whereArgs,null,null,null,null);
+        if (!(cursor.moveToFirst()) || cursor.getCount() ==0){
+            return null;
+        }else{
+
+            TrainingStatus trainingStatus = cursorToTrainingStatus(cursor);
+            cursor.close();
+            return trainingStatus;
+        }
+    }
+
+    public List<TrainingStatus> getTrainingStatuss(){
+        SQLiteDatabase db = getWritableDatabase();
+        Cursor cursor = db.query(TABLE_TRAINING_STATUS,trainingStatusColumns,null,null,
+                null,null,null,null);
+        List<TrainingStatus> trainingStatusList = new ArrayList<>();
+        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()){
+            TrainingStatus trainingStatus = cursorToTrainingStatus(cursor);
+            trainingStatusList.add(trainingStatus);
+        }
+        cursor.close();
+        return trainingStatusList;
     }
 }
