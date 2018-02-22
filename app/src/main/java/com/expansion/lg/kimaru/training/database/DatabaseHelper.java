@@ -1206,14 +1206,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private TrainingClass cursorToTrainingClass(Cursor cursor){
         TrainingClass trainingClass = new TrainingClass();
-        trainingClass.setId(cursor.getString(cursor.getColumnIndex(ID)));
+        trainingClass.setId(cursor.getInt(cursor.getColumnIndex(ID)));
         trainingClass.setTrainingId(cursor.getString(cursor.getColumnIndex(TRAINING_ID)));
         trainingClass.setClassName(cursor.getString(cursor.getColumnIndex(CLASS_NAME)));
         trainingClass.setCountry(cursor.getString(cursor.getColumnIndex(COUNTRY)));
-        trainingClass.setClientTime(cursor.getString(cursor.getColumnIndex(CLIENT_TIME)));
-        trainingClass.setCreatedBy(cursor.getString(cursor.getColumnIndex(CREATED_BY)));
+        trainingClass.setClientTime(cursor.getLong(cursor.getColumnIndex(CLIENT_TIME)));
+        trainingClass.setCreatedBy(cursor.getInt(cursor.getColumnIndex(CREATED_BY)));
         trainingClass.setDateCreated(cursor.getString(cursor.getColumnIndex(DATE_CREATED)));
-        trainingClass.setArchived(cursor.getString(cursor.getColumnIndex(ARCHIVED)));
+        trainingClass.setArchived(cursor.getInt(cursor.getColumnIndex(ARCHIVED))==1);
         trainingClass.setComment(cursor.getString(cursor.getColumnIndex(COMMENT)));
         return trainingClass;
     }
@@ -1228,7 +1228,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         cv.put(CLIENT_TIME, trainingClass.getClientTime());
         cv.put(CREATED_BY, trainingClass.getCreatedBy());
         cv.put(DATE_CREATED, trainingClass.getDateCreated());
-        cv.put(ARCHIVED, trainingClass.getArchived());
+        cv.put(ARCHIVED, trainingClass.isArchived());
         cv.put(COMMENT, trainingClass.getComment());
 
         long id;
