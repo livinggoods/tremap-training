@@ -6,8 +6,8 @@ package com.expansion.lg.kimaru.training.objs;
 
 public class Training {
     String id, trainingName, country, subCountyId, wardId, district, recruitmentId, parishId;
-    String trainingVenueId, dateCreated;
-    int countyId, locationId, trainingStatusId, createdBy, comment;
+    String trainingVenueId, dateCreated, comment;
+    int countyId, locationId, trainingStatusId, createdBy;
     double lat,lon;
     Long clientTime, dateCommenced, dateCompleted;
     boolean archived;
@@ -17,7 +17,7 @@ public class Training {
     public Training(String id, String trainingName, String country, String subCountyId,
                     String wardId, String district, String recruitmentId, String parishId,
                     String trainingVenueId, String dateCreated, int countyId, int locationId,
-                    int trainingStatusId, int createdBy, int comment, double lat, double lon,
+                    int trainingStatusId, int createdBy, String comment, double lat, double lon,
                     Long clientTime, Long dateCommenced, Long dateCompleted, boolean archived) {
         this.id = id;
         this.trainingName = trainingName;
@@ -98,7 +98,7 @@ public class Training {
         return createdBy;
     }
 
-    public int getComment() {
+    public String getComment() {
         return comment;
     }
 
@@ -182,7 +182,7 @@ public class Training {
         this.createdBy = createdBy;
     }
 
-    public void setComment(int comment) {
+    public void setComment(String comment) {
         this.comment = comment;
     }
 
