@@ -10,6 +10,7 @@ import com.expansion.lg.kimaru.training.objs.SessionAttendance;
 import com.expansion.lg.kimaru.training.objs.SessionTopic;
 import com.expansion.lg.kimaru.training.objs.Training;
 import com.expansion.lg.kimaru.training.objs.TrainingSession;
+import com.expansion.lg.kimaru.training.objs.TrainingSessionType;
 import com.expansion.lg.kimaru.training.objs.TrainingVenue;
 
 import java.util.ArrayList;
@@ -847,5 +848,90 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
         cursor.close();
         return trainingSessionList;
+    }
+
+    /**
+     * ************************************
+     *           TRAINING SESSION TYPE    *
+     * ************************************
+     */
+
+    private TrainingSessionType cursorToTrainingSessionType(Cursor cursor){
+        TrainingSessionType trainingSessionType = new TrainingSessionType();
+        trainingSessionType.setId(cursor.getString(cursor.getColumnIndex(ID)));
+        trainingSessionType.setSessionName(cursor.getString(cursor.getColumnIndex(SESSION_NAME)));
+        trainingSessionType.setClassId(cursor.getInt(cursor.getColumnIndex(CLASS_ID)));
+        trainingSessionType.setCountry(cursor.getString(cursor.getColumnIndex(COUNTRY)));
+        trainingSessionType.setArchived(cursor.getInt(cursor.getColumnIndex(ARCHIVED))==1);
+        trainingSessionType.setClientTime(cursor.getLong(cursor.getColumnIndex(CLIENT_TIME)));
+        trainingSessionType.setCreatedBy(cursor.getInt(cursor.getColumnIndex(CREATED_BY)));
+        trainingSessionType.setDateCreated(cursor.getString(cursor.getColumnIndex(DATE_CREATED)));
+        trainingSessionType.setComment(cursor.getString(cursor.getColumnIndex(COMMENT)));
+        return trainingSessionType;
+    }
+
+    public long addTrainingSessionType(TrainingSessionType trainingSessionType){
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put(ID, trainingSessionType.getId());
+        cv.put(SESSION_NAME, trainingSessionType.getSessionName());
+        cv.put(CLASS_ID, trainingSessionType.getClassId());
+        cv.put(COUNTRY, trainingSessionType.getCountry());
+        cv.put(ARCHIVED, trainingSessionType.isArchived());
+        cv.put(CLIENT_TIME, trainingSessionType.getClientTime());
+        cv.put(CREATED_BY, trainingSessionType.getCreatedBy());
+        cv.put(DATE_CREATED, trainingSessionType.getDateCreated());
+        cv.put(COMMENT, trainingSessionType.getComment());
+        long id;
+        if(trainingSessionTypeExists(trainingSessionType)){
+            id = db.update(TABLE_TRAINING_SESSION_TYPE, cv, ID+"='"+trainingSessionType.getId()+"'",
+                    null);
+        }else{
+            id = db.insertWithOnConflict(TABLE_TRAINING_SESSION_TYPE, null, cv,
+                    SQLiteDatabase.CONFLICT_REPLACE);
+        }
+        db.close();
+        return id;
+    }
+
+    public boolean trainingSessionTypeExists(TrainingSessionType trainingSessionType) {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cur = db.rawQuery("SELECT "+ID+" FROM " + TABLE_TRAINING_SESSION_TYPE + " WHERE "+
+                ID+" = '" + trainingSessionType.getId() + "'", null);
+        boolean exist = (cur.getCount() > 0);
+        cur.close();
+        return exist;
+
+    }
+
+    public TrainingSessionType getTrainingSessionTypeById(String trainingSessionTypeId){
+        SQLiteDatabase db = getWritableDatabase();
+        String whereClause = ID +" = ?";
+        String[] whereArgs = new String[] {
+                trainingSessionTypeId,
+        };
+        Cursor cursor=db.query(TABLE_TRAINING_SESSION_TYPE, trainingSessionTypeColumns, whereClause,
+                whereArgs,null,null,null,null);
+        if (!(cursor.moveToFirst()) || cursor.getCount() ==0){
+            return null;
+        }else{
+
+            TrainingSessionType trainingSessionType = cursorToTrainingSessionType(cursor);
+            cursor.close();
+            return trainingSessionType;
+        }
+    }
+
+    public List<TrainingSessionType> getTrainingSessionTypes(){
+        SQLiteDatabase db = getWritableDatabase();
+        Cursor cursor = db.query(TABLE_TRAINING_SESSION_TYPE,trainingSessionColumns,null,null,
+                null,null,null,null);
+        List<TrainingSessionType> trainingSessionTypeList = new ArrayList<>();
+        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()){
+            TrainingSessionType trainingSessionType = cursorToTrainingSessionType(cursor);
+            trainingSessionTypeList.add(trainingSessionType);
+        }
+        cursor.close();
+        return trainingSessionTypeList;
     }
 }
