@@ -9,6 +9,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import com.expansion.lg.kimaru.training.objs.SessionAttendance;
 import com.expansion.lg.kimaru.training.objs.SessionTopic;
 import com.expansion.lg.kimaru.training.objs.Training;
+import com.expansion.lg.kimaru.training.objs.TrainingRole;
 import com.expansion.lg.kimaru.training.objs.TrainingSession;
 import com.expansion.lg.kimaru.training.objs.TrainingSessionType;
 import com.expansion.lg.kimaru.training.objs.TrainingStatus;
@@ -319,7 +320,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private String[] trainingStatusColumns = new String[]{ID, NAME, ARCHIVED, READONLY, COUNTRY,
             CLIENT_TIME, CREATED_BY, DATE_CREATED, COMMENT};
 
-    private String[] trainingRolesStatusColumns = new String[]{ID, ROLE_NAME, ARCHIVED, READONLY,
+    private String[] trainingRoleColumns = new String[]{ID, ROLE_NAME, ARCHIVED, READONLY,
             COUNTRY, CLIENT_TIME, CREATED_BY, DATE_CREATED, COMMENT};
 
     private String [] trainingTrainersColumns = new String[] {ID, TRAINING_ID, CLASS_ID, TRAINER_ID,
@@ -1019,5 +1020,90 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
         cursor.close();
         return trainingStatusList;
+    }
+
+    /**
+     * ************************************
+     *           TRAINING ROLES           *
+     * ************************************
+     */
+
+    private TrainingRole cursorToTrainingRole(Cursor cursor){
+        TrainingRole trainingRole = new TrainingRole();
+        trainingRole.setId(cursor.getInt(cursor.getColumnIndex(ID)));
+        trainingRole.setRoleName(cursor.getString(cursor.getColumnIndex(ROLE_NAME)));
+        trainingRole.setArchived(cursor.getInt(cursor.getColumnIndex(ARCHIVED))==1);
+        trainingRole.setReadonly(cursor.getInt(cursor.getColumnIndex(READONLY))==1);
+        trainingRole.setCountry(cursor.getString(cursor.getColumnIndex(COUNTRY)));
+        trainingRole.setClientTime(cursor.getLong(cursor.getColumnIndex(CLIENT_TIME)));
+        trainingRole.setCreatedBy(cursor.getInt(cursor.getColumnIndex(CREATED_BY)));
+        trainingRole.setDateCreated(cursor.getString(cursor.getColumnIndex(DATE_CREATED)));
+        trainingRole.setComment(cursor.getString(cursor.getColumnIndex(COMMENT)));
+        return trainingRole;
+    }
+
+    public long addTrainingRole(TrainingRole trainingRole){
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put(ID, trainingRole.getId());
+        cv.put(ROLE_NAME, trainingRole.getRoleName());
+        cv.put(ARCHIVED, trainingRole.isArchived());
+        cv.put(READONLY, trainingRole.isReadonly());
+        cv.put(COUNTRY, trainingRole.getCountry());
+        cv.put(CLIENT_TIME, trainingRole.getClientTime());
+        cv.put(CREATED_BY, trainingRole.getCreatedBy());
+        cv.put(DATE_CREATED, trainingRole.getDateCreated());
+        cv.put(COMMENT, trainingRole.getComment());
+        long id;
+        if(trainingRoleExists(trainingRole)){
+            id = db.update(TABLE_TRAINING_ROLES, cv, ID+"='"+trainingRole.getId()+"'",
+                    null);
+        }else{
+            id = db.insertWithOnConflict(TABLE_TRAINING_ROLES, null, cv,
+                    SQLiteDatabase.CONFLICT_REPLACE);
+        }
+        db.close();
+        return id;
+    }
+
+    public boolean trainingRoleExists(TrainingRole trainingRole) {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cur = db.rawQuery("SELECT "+ID+" FROM " + TABLE_TRAINING_ROLES + " WHERE "+
+                ID+" = '" + trainingRole.getId() + "'", null);
+        boolean exist = (cur.getCount() > 0);
+        cur.close();
+        return exist;
+
+    }
+
+    public TrainingRole getTrainingRoleById(String trainingRoleId){
+        SQLiteDatabase db = getWritableDatabase();
+        String whereClause = ID +" = ?";
+        String[] whereArgs = new String[] {
+                trainingRoleId,
+        };
+        Cursor cursor=db.query(TABLE_TRAINING_ROLES, trainingRoleColumns, whereClause,
+                whereArgs,null,null,null,null);
+        if (!(cursor.moveToFirst()) || cursor.getCount() ==0){
+            return null;
+        }else{
+
+            TrainingRole trainingRole = cursorToTrainingRole(cursor);
+            cursor.close();
+            return trainingRole;
+        }
+    }
+
+    public List<TrainingRole> getTrainingRoles(){
+        SQLiteDatabase db = getWritableDatabase();
+        Cursor cursor = db.query(TABLE_TRAINING_ROLES,trainingRoleColumns,null,null,
+                null,null,null,null);
+        List<TrainingRole> trainingRoleList = new ArrayList<>();
+        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()){
+            TrainingRole trainingRole = cursorToTrainingRole(cursor);
+            trainingRoleList.add(trainingRole);
+        }
+        cursor.close();
+        return trainingRoleList;
     }
 }
