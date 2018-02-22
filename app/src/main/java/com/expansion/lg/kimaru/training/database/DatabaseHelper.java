@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import com.expansion.lg.kimaru.training.objs.SessionAttendance;
 import com.expansion.lg.kimaru.training.objs.Training;
 import com.expansion.lg.kimaru.training.objs.TrainingVenue;
 
@@ -295,19 +296,23 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     }
 
+    String [] trainingColumns = new String[]{ID, TRAINING_NAME, COUNTRY, COUNTY_ID, LOCATION_ID,
+            SUBCOUNTY_ID, WARD_ID, DISTRICT, RECRUITMENT_ID, PARISH_ID, LAT, LON, TRAINING_VENUE_ID,
+            TRAINING_STATUS_ID, CLIENT_TIME, CREATED_BY, DATE_CREATED, ARCHIVED, COMMENT,
+            DATE_COMMENCED, DATE_COMPLETED};
+    String [] trainingVenueColumns = new String[] {ID, NAME, MAPPING, LAT, LON, INSPECTED, COUNTRY,
+            SELECTED, CAPACITY, DATE_ADDED, ADDED_BY, CLIENT_TIME, META_DATA, ARCHIVED};
+    String[] sessionAttendanceColumns = new String[]{ID, TRAINING_SESSION_ID, TRAINEE_ID,
+            TRAINING_SESSION_TYPE_ID, TRAINING_ID, COUNTRY, ATTENDED, CREATED_BY, CLIENT_TIME,
+            DATE_CREATED, META_DATA, COMMENT, ARCHIVED};
+
     /**
      * **************************************
      * Training                             *
      * **************************************
      */
 
-    String [] trainingColumns = new String[]{ID, TRAINING_NAME, COUNTRY, COUNTY_ID, LOCATION_ID,
-            SUBCOUNTY_ID, WARD_ID, DISTRICT, RECRUITMENT_ID, PARISH_ID, LAT, LON, TRAINING_VENUE_ID,
-            TRAINING_STATUS_ID, CLIENT_TIME, CREATED_BY, DATE_CREATED, ARCHIVED, COMMENT,
-            DATE_COMMENCED, DATE_COMPLETED
-    };
-    String [] trainingVenueColumns = new String[] {ID, NAME, MAPPING, LAT, LON, INSPECTED, COUNTRY,
-            SELECTED, CAPACITY, DATE_ADDED, ADDED_BY, CLIENT_TIME, META_DATA, ARCHIVED};
+
     /**
      *
      * @param training
@@ -533,4 +538,93 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
 
+    /**
+     * ************************************
+     *        SESSION ATTENDANCE          *
+     * ************************************
+     */
+
+    private SessionAttendance cursorToSessionAttendance(Cursor cursor){
+        SessionAttendance sessionAttendance = new SessionAttendance();
+
+        sessionAttendance.setId(cursor.getString(cursor.getColumnIndex(ID)));
+        sessionAttendance.setTrainingSessionId(cursor.getString(cursor.getColumnIndex(TRAINING_SESSION_ID)));
+        sessionAttendance.setTraineeId(cursor.getString(cursor.getColumnIndex(TRAINEE_ID)));
+        sessionAttendance.setTrainingSessionTypeId(cursor.getInt(cursor.getColumnIndex(TRAINING_SESSION_TYPE_ID)));
+        sessionAttendance.setTrainingId(cursor.getString(cursor.getColumnIndex(TRAINING_ID)));
+        sessionAttendance.setCountry(cursor.getString(cursor.getColumnIndex(COUNTRY)));
+        sessionAttendance.setAttended(cursor.getInt(cursor.getColumnIndex(ATTENDED))==1);
+        sessionAttendance.setCreatedBy(cursor.getInt(cursor.getColumnIndex(CREATED_BY)));
+        sessionAttendance.setClientTime(cursor.getLong(cursor.getColumnIndex(CLIENT_TIME)));
+        sessionAttendance.setDateCreated(cursor.getString(cursor.getColumnIndex(DATE_CREATED)));
+        sessionAttendance.setMetaData(cursor.getString(cursor.getColumnIndex(META_DATA)));
+        sessionAttendance.setComment(cursor.getString(cursor.getColumnIndex(COMMENT)));
+        sessionAttendance.setArchived(cursor.getInt(cursor.getColumnIndex(ARCHIVED))==1);
+        return sessionAttendance;
+    }
+
+    public long addSessionAttendance(SessionAttendance sessionAttendance){
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put(ID, sessionAttendance.getId());
+        cv.put(TRAINING_SESSION_ID, sessionAttendance.getTrainingSessionId());
+        cv.put(TRAINEE_ID, sessionAttendance.getTraineeId());
+        cv.put(TRAINING_SESSION_TYPE_ID, sessionAttendance.getTrainingSessionTypeId());
+        cv.put(TRAINING_ID, sessionAttendance.getTrainingId());
+        cv.put(COUNTRY, sessionAttendance.getCountry());
+        cv.put(ATTENDED, sessionAttendance.isAttended());
+        cv.put(CREATED_BY, sessionAttendance.getCreatedBy());
+        cv.put(CLIENT_TIME, sessionAttendance.getClientTime());
+        cv.put(DATE_CREATED, sessionAttendance.getDateCreated());
+        cv.put(META_DATA, sessionAttendance.getMetaData());
+        cv.put(COMMENT, sessionAttendance.getComment());
+        cv.put(ARCHIVED, sessionAttendance.isArchived());
+        long id;
+        if(sessionAttendanceExists(sessionAttendance)){
+            id = db.update(TABLE_SESSION_ATTENDANCE, cv, ID+"='"+sessionAttendance.getId()+"'", null);
+        }else{
+            id = db.insertWithOnConflict(TABLE_SESSION_ATTENDANCE, null, cv, SQLiteDatabase.CONFLICT_REPLACE);
+        }
+        db.close();
+        return id;
+    }
+
+    public boolean sessionAttendanceExists(SessionAttendance sessionAttendance) {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cur = db.rawQuery("SELECT "+ID+" FROM " + TABLE_SESSION_ATTENDANCE + " WHERE "+ID+" = '" + sessionAttendance.getId() + "'", null);
+        boolean exist = (cur.getCount() > 0);
+        cur.close();
+        return exist;
+
+    }
+
+    public SessionAttendance getSessionAttendaceById(String sessionAttendanceId){
+        SQLiteDatabase db = getWritableDatabase();
+        String whereClause = ID +" = ?";
+        String[] whereArgs = new String[] {
+                sessionAttendanceId,
+        };
+        Cursor cursor=db.query(TABLE_SESSION_ATTENDANCE, sessionAttendanceColumns, whereClause,whereArgs,null,null,null,null);
+        if (!(cursor.moveToFirst()) || cursor.getCount() ==0){
+            return null;
+        }else{
+
+            SessionAttendance sessionAttendance = cursorToSessionAttendance(cursor);
+            cursor.close();
+            return sessionAttendance;
+        }
+    }
+
+    public List<SessionAttendance> getSessionAttendance(){
+        SQLiteDatabase db = getWritableDatabase();
+        Cursor cursor = db.query(TABLE_SESSION_ATTENDANCE,sessionAttendanceColumns,null,null,null,null,
+                null,null);
+        List<SessionAttendance> sessionAttendanceList = new ArrayList<>();
+        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()){
+            SessionAttendance sessionAttendance = cursorToSessionAttendance(cursor);
+            sessionAttendanceList.add(sessionAttendance);
+        }
+        cursor.close();
+        return sessionAttendanceList;
+    }
 }
