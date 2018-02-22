@@ -298,20 +298,40 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     }
 
-    String [] trainingColumns = new String[]{ID, TRAINING_NAME, COUNTRY, COUNTY_ID, LOCATION_ID,
+    private String [] trainingColumns = new String[]{ID, TRAINING_NAME, COUNTRY, COUNTY_ID, LOCATION_ID,
             SUBCOUNTY_ID, WARD_ID, DISTRICT, RECRUITMENT_ID, PARISH_ID, LAT, LON, TRAINING_VENUE_ID,
             TRAINING_STATUS_ID, CLIENT_TIME, CREATED_BY, DATE_CREATED, ARCHIVED, COMMENT,
             DATE_COMMENCED, DATE_COMPLETED};
-    String [] trainingVenueColumns = new String[] {ID, NAME, MAPPING, LAT, LON, INSPECTED, COUNTRY,
+    private String [] trainingVenueColumns = new String[] {ID, NAME, MAPPING, LAT, LON, INSPECTED, COUNTRY,
             SELECTED, CAPACITY, DATE_ADDED, ADDED_BY, CLIENT_TIME, META_DATA, ARCHIVED};
-    String[] sessionAttendanceColumns = new String[]{ID, TRAINING_SESSION_ID, TRAINEE_ID,
+    private String[] sessionAttendanceColumns = new String[]{ID, TRAINING_SESSION_ID, TRAINEE_ID,
             TRAINING_SESSION_TYPE_ID, TRAINING_ID, COUNTRY, ATTENDED, CREATED_BY, CLIENT_TIME,
             DATE_CREATED, META_DATA, COMMENT, ARCHIVED};
-    String[] sessionTopicColumns = new String[] {ID, NAME, COUNTRY, ARCHIVED,ADDED_BY, DATE_ADDED,
+    private String[] sessionTopicColumns = new String[] {ID, NAME, COUNTRY, ARCHIVED,ADDED_BY, DATE_ADDED,
             META_DATA, COMMENT};
-    String[] trainingSessionColumns = new String[]{ID,TRAINING_SESSION_TYPE_ID, CLASS_ID,
+    private String[] trainingSessionColumns = new String[]{ID,TRAINING_SESSION_TYPE_ID, CLASS_ID,
             TRAINING_ID, TRAINER_ID, COUNTRY, ARCHIVED, SESSION_START_TIME, SESSION_END_TIME,
             SESSION_TOPIC_ID, SESSION_LEAD_TRAINER, CLIENT_TIME, CREATED_BY, DATE_CREATED, COMMENT};
+    private String[] trainingSessionTypeColumns = new String[]{ID, SESSION_NAME, CLASS_ID, COUNTRY,
+            ARCHIVED, CLIENT_TIME, CREATED_BY, DATE_CREATED, COMMENT};
+    private String[] trainingStatusColumns = new String[]{ID, NAME, ARCHIVED, READONLY, COUNTRY,
+            CLIENT_TIME, CREATED_BY, DATE_CREATED, COMMENT};
+
+    private String[] trainingRolesStatusColumns = new String[]{ID, ROLE_NAME, ARCHIVED, READONLY,
+            COUNTRY, CLIENT_TIME, CREATED_BY, DATE_CREATED, COMMENT};
+
+    private String [] trainingTrainersColumns = new String[] {ID, TRAINING_ID, CLASS_ID, TRAINER_ID,
+            COUNTRY, CLIENT_TIME, CREATED_BY, DATE_CREATED, ARCHIVED, TRAINING_ROLE_ID, COMMENT};
+
+    private String [] trainingClassesColumns = new String[] {ID, TRAINING_ID, CLASS_NAME, COUNTRY,
+            CLIENT_TIME, CREATED_BY, DATE_CREATED, ARCHIVED, COMMENT};
+
+    private String [] trainingTraineeColumns = new String[] {ID, REGISTRATION_ID, CLASS_ID,
+            TRAINING_ID, COUNTRY, ADDED_BY, DATE_CREATED, CLIENT_TIME, BRANCH, COHORT, CHP_CODE,
+            ARCHIVED, REGISTRATION, COMMENT};
+    private String [] usersColumns = new String[] {ID, EMAIL, USERNAME, PASSWORD, NAME, COUNTRY};
+    private String [] traineeCommentsColumns = new String[] {ID,TRAINEE_ID, TRAINING_ID,
+            COUNTRY, ADDED_BY, DATE_CREATED, CLIENT_TIME, ARCHIVED, COMMENT};
 
     /**
      * **************************************
