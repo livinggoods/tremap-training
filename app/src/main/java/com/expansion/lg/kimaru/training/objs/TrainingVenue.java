@@ -9,7 +9,7 @@ public class TrainingVenue {
     Double lat, lon;
     Integer inspected, capacity, addedBy;
     Long clientTime;
-    boolean archived;
+    boolean archived, selected;
 
     public TrainingVenue() {
     }
@@ -17,7 +17,7 @@ public class TrainingVenue {
     public TrainingVenue(String id, String name, String mapping, String country,
                          String dateAdded, String metaData, Double lat, Double lon,
                          Integer inspected, Integer capacity, Integer addedBy, Long clientTime,
-                         boolean archived) {
+                         boolean archived, boolean selected) {
         this.id = id;
         this.name = name;
         this.mapping = mapping;
@@ -31,6 +31,7 @@ public class TrainingVenue {
         this.addedBy = addedBy;
         this.clientTime = clientTime;
         this.archived = archived;
+        this.selected = selected;
     }
 
     public String getId() {
@@ -135,5 +136,13 @@ public class TrainingVenue {
 
     public void setArchived(boolean archived) {
         this.archived = archived;
+    }
+
+    public boolean isSelected() {
+        return selected;
+    }
+
+    public void setSelected(boolean selected) {
+        this.selected = selected;
     }
 }
