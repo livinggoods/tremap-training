@@ -8,7 +8,7 @@ import org.json.JSONObject;
 
 public class TrainingTrainee {
     String id, registrationId, dateCreated, trainingId, country, chpCode, comment;
-    Integer class_id, added_by, branch, cohort;
+    Integer classId, added_by, branch, cohort;
     Long clientTime;
     boolean archived;
     JSONObject registration;
@@ -18,7 +18,7 @@ public class TrainingTrainee {
 
     public TrainingTrainee(String id, String registrationId, String dateCreated,
                            String trainingId, String country, String chpCode, String comment,
-                           Integer class_id, Integer added_by, Integer branch, Integer cohort,
+                           Integer classId, Integer added_by, Integer branch, Integer cohort,
                            Long clientTime, boolean archived, JSONObject registration) {
         this.id = id;
         this.registrationId = registrationId;
@@ -27,7 +27,7 @@ public class TrainingTrainee {
         this.country = country;
         this.chpCode = chpCode;
         this.comment = comment;
-        this.class_id = class_id;
+        this.classId = classId;
         this.added_by = added_by;
         this.branch = branch;
         this.cohort = cohort;
@@ -92,12 +92,12 @@ public class TrainingTrainee {
         this.comment = comment;
     }
 
-    public Integer getClass_id() {
-        return class_id;
+    public Integer getClassId() {
+        return classId;
     }
 
-    public void setClass_id(Integer class_id) {
-        this.class_id = class_id;
+    public void setClassId(Integer classId) {
+        this.classId = classId;
     }
 
     public Integer getAdded_by() {

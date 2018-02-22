@@ -14,8 +14,11 @@ import com.expansion.lg.kimaru.training.objs.TrainingRole;
 import com.expansion.lg.kimaru.training.objs.TrainingSession;
 import com.expansion.lg.kimaru.training.objs.TrainingSessionType;
 import com.expansion.lg.kimaru.training.objs.TrainingStatus;
+import com.expansion.lg.kimaru.training.objs.TrainingTrainee;
 import com.expansion.lg.kimaru.training.objs.TrainingTrainer;
 import com.expansion.lg.kimaru.training.objs.TrainingVenue;
+
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -1282,5 +1285,103 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
         cursor.close();
         return trainingClassList;
+    }
+
+    /**
+     * ************************************
+     *         TRAINING TRAINEES          *
+     * ************************************
+     */
+
+    private TrainingTrainee cursorToTrainingTrainee(Cursor cursor){
+        TrainingTrainee trainingTrainee = new TrainingTrainee();
+        trainingTrainee.setId(cursor.getString(cursor.getColumnIndex(ID)));
+        trainingTrainee.setRegistrationId(cursor.getString(cursor.getColumnIndex(REGISTRATION_ID)));
+        trainingTrainee.setClassId(cursor.getInt(cursor.getColumnIndex(CLASS_ID)));
+        trainingTrainee.setTrainingId(cursor.getString(cursor.getColumnIndex(TRAINING_ID)));
+        trainingTrainee.setCountry(cursor.getString(cursor.getColumnIndex(COUNTRY)));
+        trainingTrainee.setAdded_by(cursor.getInt(cursor.getColumnIndex(ADDED_BY)));
+        trainingTrainee.setDateCreated(cursor.getString(cursor.getColumnIndex(DATE_CREATED)));
+        trainingTrainee.setClientTime(cursor.getLong(cursor.getColumnIndex(CLIENT_TIME)));
+        trainingTrainee.setBranch(cursor.getInt(cursor.getColumnIndex(BRANCH)));
+        trainingTrainee.setCohort(cursor.getInt(cursor.getColumnIndex(COHORT)));
+        trainingTrainee.setChpCode(cursor.getString(cursor.getColumnIndex(CHP_CODE)));
+        trainingTrainee.setArchived(cursor.getInt(cursor.getColumnIndex(ARCHIVED))==1);
+        try{
+            trainingTrainee.setRegistration(new JSONObject(cursor.getString(cursor.getColumnIndex(REGISTRATION))));
+        }catch (Exception e){}
+
+        trainingTrainee.setComment(cursor.getString(cursor.getColumnIndex(COMMENT)));
+        return trainingTrainee;
+    }
+
+    public long addTrainingTrainee(TrainingTrainee trainingTrainee){
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put(ID, trainingTrainee.getId());
+        cv.put(REGISTRATION_ID, trainingTrainee.getRegistrationId());
+        cv.put(CLASS_ID, trainingTrainee.getClassId());
+        cv.put(TRAINING_ID, trainingTrainee.getTrainingId());
+        cv.put(COUNTRY, trainingTrainee.getCountry());
+        cv.put(ADDED_BY, trainingTrainee.getAdded_by());
+        cv.put(DATE_CREATED, trainingTrainee.getDateCreated());
+        cv.put(CLIENT_TIME, trainingTrainee.getClientTime());
+        cv.put(BRANCH, trainingTrainee.getBranch());
+        cv.put(COHORT, trainingTrainee.getCohort());
+        cv.put(CHP_CODE, trainingTrainee.getChpCode());
+        cv.put(ARCHIVED, trainingTrainee.isArchived());
+        cv.put(REGISTRATION, trainingTrainee.getRegistration().toString());
+        cv.put(COMMENT, trainingTrainee.getComment());
+        long id;
+        if(trainingTraineeExists(trainingTrainee)){
+            id = db.update(TABLE_TRAINING_TRAINEES, cv, ID+"='"+trainingTrainee.getId()+"'",
+                    null);
+        }else{
+            id = db.insertWithOnConflict(TABLE_TRAINING_TRAINEES, null, cv,
+                    SQLiteDatabase.CONFLICT_REPLACE);
+        }
+        db.close();
+        return id;
+    }
+
+    public boolean trainingTraineeExists(TrainingTrainee trainingTrainee) {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cur = db.rawQuery("SELECT "+ID+" FROM " + TABLE_TRAINING_TRAINEES + " WHERE "+
+                ID+" = '" + trainingTrainee.getId() + "'", null);
+        boolean exist = (cur.getCount() > 0);
+        cur.close();
+        return exist;
+
+    }
+
+    public TrainingTrainee getTrainingTraineeById(String trainingTraineeId){
+        SQLiteDatabase db = getWritableDatabase();
+        String whereClause = ID +" = ?";
+        String[] whereArgs = new String[] {
+                trainingTraineeId,
+        };
+        Cursor cursor=db.query(TABLE_TRAINING_TRAINEES, trainingTraineeColumns, whereClause,
+                whereArgs,null,null,null,null);
+        if (!(cursor.moveToFirst()) || cursor.getCount() ==0){
+            return null;
+        }else{
+
+            TrainingTrainee trainingTrainee = cursorToTrainingTrainee(cursor);
+            cursor.close();
+            return trainingTrainee;
+        }
+    }
+
+    public List<TrainingTrainee> getTrainingTrainees(){
+        SQLiteDatabase db = getWritableDatabase();
+        Cursor cursor = db.query(TABLE_TRAINING_TRAINEES,trainingTraineeColumns,null,null,
+                null,null,null,null);
+        List<TrainingTrainee> trainingTraineeList = new ArrayList<>();
+        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()){
+            TrainingTrainee trainingTrainee = cursorToTrainingTrainee(cursor);
+            trainingTraineeList.add(trainingTrainee);
+        }
+        cursor.close();
+        return trainingTraineeList;
     }
 }
