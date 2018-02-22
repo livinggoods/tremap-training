@@ -9,6 +9,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import com.expansion.lg.kimaru.training.objs.SessionAttendance;
 import com.expansion.lg.kimaru.training.objs.SessionTopic;
 import com.expansion.lg.kimaru.training.objs.Training;
+import com.expansion.lg.kimaru.training.objs.TrainingSession;
 import com.expansion.lg.kimaru.training.objs.TrainingVenue;
 
 import java.util.ArrayList;
@@ -308,6 +309,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             DATE_CREATED, META_DATA, COMMENT, ARCHIVED};
     String[] sessionTopicColumns = new String[] {ID, NAME, COUNTRY, ARCHIVED,ADDED_BY, DATE_ADDED,
             META_DATA, COMMENT};
+    String[] trainingSessionColumns = new String[]{ID,TRAINING_SESSION_TYPE_ID, CLASS_ID,
+            TRAINING_ID, TRAINER_ID, COUNTRY, ARCHIVED, SESSION_START_TIME, SESSION_END_TIME,
+            SESSION_TOPIC_ID, SESSION_LEAD_TRAINER, CLIENT_TIME, CREATED_BY, DATE_CREATED, COMMENT};
 
     /**
      * **************************************
@@ -645,7 +649,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     /**
      * ************************************
-     * CREATE_TABLE_SESSION_TOPIC         *
+     *              SESSION_TOPIC         *
      * ************************************
      */
 
@@ -723,5 +727,105 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
         cursor.close();
         return sessionTopicList;
+    }
+
+
+    /**
+     * ************************************
+     *           TRAINING_SESSION         *
+     * ************************************
+     */
+
+    private TrainingSession cursorToTrainingSession(Cursor cursor){
+        TrainingSession trainingSession = new TrainingSession();
+        trainingSession.setId(cursor.getString(cursor.getColumnIndex(ID)));
+        trainingSession.setTrainingSessionTypeId(cursor.getInt(cursor.getColumnIndex(
+                TRAINING_SESSION_TYPE_ID)));
+        trainingSession.setClassId(cursor.getInt(cursor.getColumnIndex(CLASS_ID)));
+        trainingSession.setTrainingId(cursor.getString(cursor.getColumnIndex(TRAINING_ID)));
+        trainingSession.setTrainerId(cursor.getInt(cursor.getColumnIndex(TRAINER_ID)));
+        trainingSession.setCountry(cursor.getString(cursor.getColumnIndex(COUNTRY)));
+        trainingSession.setArchived(cursor.getInt(cursor.getColumnIndex(ARCHIVED))==1);
+        trainingSession.setSessionStartTime(cursor.getLong(cursor.getColumnIndex(SESSION_START_TIME)));
+        trainingSession.setSessionEndTime(cursor.getLong(cursor.getColumnIndex(SESSION_END_TIME)));
+        trainingSession.setSessionTopicId(cursor.getInt(cursor.getColumnIndex(SESSION_TOPIC_ID)));
+        trainingSession.setSessionLeadTrainer(cursor.getInt(cursor.getColumnIndex(SESSION_LEAD_TRAINER)));
+        trainingSession.setClientTime(cursor.getLong(cursor.getColumnIndex(CLIENT_TIME)));
+        trainingSession.setCreatedBy(cursor.getInt(cursor.getColumnIndex(CREATED_BY)));
+        trainingSession.setDateCreated(cursor.getString(cursor.getColumnIndex(DATE_CREATED)));
+        trainingSession.setComment(cursor.getString(cursor.getColumnIndex(COMMENT)));
+        return trainingSession;
+    }
+
+    public long addTrainingSession(TrainingSession trainingSession){
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues cv = new ContentValues();
+
+        cv.put(ID, trainingSession.getId());
+        cv.put(TRAINING_SESSION_TYPE_ID, trainingSession.getTrainingSessionTypeId());
+        cv.put(CLASS_ID, trainingSession.getClassId());
+        cv.put(TRAINING_ID, trainingSession.getTrainingId());
+        cv.put(TRAINER_ID, trainingSession.getTrainerId());
+        cv.put(COUNTRY, trainingSession.getCountry());
+        cv.put(ARCHIVED, trainingSession.isArchived());
+        cv.put(SESSION_START_TIME, trainingSession.getSessionStartTime());
+        cv.put(SESSION_END_TIME, trainingSession.getSessionEndTime());
+        cv.put(SESSION_TOPIC_ID, trainingSession.getSessionTopicId());
+        cv.put(SESSION_LEAD_TRAINER, trainingSession.getSessionLeadTrainer());
+        cv.put(CLIENT_TIME, trainingSession.getClientTime());
+        cv.put(CREATED_BY, trainingSession.getCreatedBy());
+        cv.put(DATE_CREATED, trainingSession.getDateCreated());
+        cv.put(COMMENT, trainingSession.getComment());
+        long id;
+        if(trainingSessionExists(trainingSession)){
+            id = db.update(TABLE_TRAINING_SESSION, cv, ID+"='"+trainingSession.getId()+"'",
+                    null);
+        }else{
+            id = db.insertWithOnConflict(TABLE_TRAINING_SESSION, null, cv,
+                    SQLiteDatabase.CONFLICT_REPLACE);
+        }
+        db.close();
+        return id;
+    }
+
+    public boolean trainingSessionExists(TrainingSession trainingSession) {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cur = db.rawQuery("SELECT "+ID+" FROM " + TABLE_TRAINING_SESSION + " WHERE "+
+                ID+" = '" + trainingSession.getId() + "'", null);
+        boolean exist = (cur.getCount() > 0);
+        cur.close();
+        return exist;
+
+    }
+
+    public TrainingSession getTrainingSessionById(String trainingSessionId){
+        SQLiteDatabase db = getWritableDatabase();
+        String whereClause = ID +" = ?";
+        String[] whereArgs = new String[] {
+                trainingSessionId,
+        };
+        Cursor cursor=db.query(TABLE_TRAINING_SESSION, trainingSessionColumns, whereClause,
+                whereArgs,null,null,null,null);
+        if (!(cursor.moveToFirst()) || cursor.getCount() ==0){
+            return null;
+        }else{
+
+            TrainingSession trainingSession = cursorToTrainingSession(cursor);
+            cursor.close();
+            return trainingSession;
+        }
+    }
+
+    public List<TrainingSession> getTrainingSessions(){
+        SQLiteDatabase db = getWritableDatabase();
+        Cursor cursor = db.query(TABLE_TRAINING_SESSION,trainingSessionColumns,null,null,
+                null,null,null,null);
+        List<TrainingSession> trainingSessionList = new ArrayList<>();
+        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()){
+            TrainingSession trainingSession = cursorToTrainingSession(cursor);
+            trainingSessionList.add(trainingSession);
+        }
+        cursor.close();
+        return trainingSessionList;
     }
 }
