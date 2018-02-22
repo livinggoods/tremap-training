@@ -924,7 +924,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public List<TrainingSessionType> getTrainingSessionTypes(){
         SQLiteDatabase db = getWritableDatabase();
-        Cursor cursor = db.query(TABLE_TRAINING_SESSION_TYPE,trainingSessionColumns,null,null,
+        Cursor cursor = db.query(TABLE_TRAINING_SESSION_TYPE,trainingSessionTypeColumns,null,null,
                 null,null,null,null);
         List<TrainingSessionType> trainingSessionTypeList = new ArrayList<>();
         for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()){
