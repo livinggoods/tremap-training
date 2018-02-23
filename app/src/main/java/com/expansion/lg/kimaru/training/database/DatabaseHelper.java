@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import com.expansion.lg.kimaru.training.objs.Branch;
 import com.expansion.lg.kimaru.training.objs.SessionAttendance;
 import com.expansion.lg.kimaru.training.objs.SessionTopic;
 import com.expansion.lg.kimaru.training.objs.Training;
@@ -53,6 +54,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String TABLE_TRAINING_TRAINEES = "trainees";
     private static final String TABLE_USERS = "users";
     private static final String TABLE_TRAINING_COMMENTS = "training_comments";
+    private static final String TABLE_BRANCH = "branch";
+    private static final String TABLE_COHORT = "cohort";
 
     // fields for Training
     private static final String ID = "id";
@@ -76,6 +79,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COMMENT = "comment";
     private static final String DATE_COMMENCED = "date_commenced";
     private static final String DATE_COMPLETED = "date_completed";
+    private static final String BRANCH_NAME = "branch_name";
+    private static final String BRANCH_CODE = "branch_code";
+    private static final String COHORT_NUMBER = "cohort_number";
+    private static final String COHORT_NAME = "cohort_name";
+    private static final String BRANCH_ID = "branch_id";
     public static final String CREATE_TABLE_TRAINING ="CREATE TABLE " + TABLE_TRAINING + "("
             + ID + varchar_field +", "
             + TRAINING_NAME + varchar_field + ", "
@@ -102,6 +110,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     // training venue
     private static final String NAME = "name";
     private static final String MAPPING = "mapping";
+    private static final String MAPPING_ID = "mapping_id";
     private static final String INSPECTED = "inspected";
     private static final String SELECTED = "selected";
     private static final String CAPACITY = "capacity";
@@ -283,6 +292,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             + NAME + varchar_field + ", "
             + COUNTRY + varchar_field + "); ";
 
+    private static final String CREATE_TABLE_BRANCH="CREATE TABLE " + TABLE_BRANCH + "("
+            + ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+            + BRANCH_NAME + varchar_field + ", "
+            + BRANCH_CODE + varchar_field + ", "
+            + MAPPING + varchar_field + ", "
+            + LAT + real_field + ", "
+            + LON + real_field + ", "
+            + ARCHIVED + integer_field + "); ";
+
     public DatabaseHelper(Context context){
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
@@ -342,6 +360,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private String [] userColumns = new String[] {ID, EMAIL, USERNAME, PASSWORD, NAME, COUNTRY};
     private String [] trainingCommentColumns = new String[] {ID,TRAINEE_ID, TRAINING_ID,
             COUNTRY, ADDED_BY, DATE_CREATED, CLIENT_TIME, ARCHIVED, COMMENT};
+    private String[] branchColumns = new String[] {ID,BRANCH_NAME,BRANCH_CODE,MAPPING_ID,LAT,LON,ARCHIVED};
 
     /**
      * **************************************
@@ -1551,4 +1570,87 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         cursor.close();
         return userList;
     }
+
+    /**
+     * ************************************
+     *         BRANCH                     *
+     * ************************************
+     */
+
+    private Branch cursorToBranch(Cursor cursor){
+        Branch branch = new Branch();
+        branch.setId(cursor.getInt(cursor.getColumnIndex(ID)));
+        branch.setBranchName(cursor.getString(cursor.getColumnIndex(BRANCH_NAME)));
+        branch.setBranchCode(cursor.getString(cursor.getColumnIndex(BRANCH_CODE)));
+        branch.setMappingId(cursor.getString(cursor.getColumnIndex(MAPPING_ID)));
+        branch.setLat(cursor.getDouble(cursor.getColumnIndex(LAT)));
+        branch.setLon(cursor.getDouble(cursor.getColumnIndex(LON)));
+        branch.setArchived(cursor.getInt(cursor.getColumnIndex(ARCHIVED))==1);
+        return branch;
+    }
+
+    public long addBranch(Branch branch){
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues cv = new ContentValues();
+
+        cv.put(ID, branch.getId());
+        cv.put(BRANCH_NAME, branch.getBranchName());
+        cv.put(BRANCH_CODE, branch.getBranchCode());
+        cv.put(MAPPING_ID, branch.getMappingId());
+        cv.put(LAT, branch.getLat());
+        cv.put(LON, branch.getLon());
+        cv.put(ARCHIVED, branch.isArchived());
+        long id;
+        if(branchExists(branch)){
+            id = db.update(TABLE_BRANCH, cv, ID+"='"+branch.getId()+"'",
+                    null);
+        }else{
+            id = db.insertWithOnConflict(TABLE_BRANCH, null, cv,
+                    SQLiteDatabase.CONFLICT_REPLACE);
+        }
+        db.close();
+        return id;
+    }
+
+    public boolean branchExists(Branch branch) {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cur = db.rawQuery("SELECT "+ID+" FROM " + TABLE_BRANCH + " WHERE "+
+                ID+" = '" + branch.getId() + "'", null);
+        boolean exist = (cur.getCount() > 0);
+        cur.close();
+        return exist;
+
+    }
+
+    public Branch getBranchById(String branchId){
+        SQLiteDatabase db = getWritableDatabase();
+        String whereClause = ID +" = ?";
+        String[] whereArgs = new String[] {
+                branchId,
+        };
+        Cursor cursor=db.query(TABLE_BRANCH, branchColumns, whereClause,
+                whereArgs,null,null,null,null);
+        if (!(cursor.moveToFirst()) || cursor.getCount() ==0){
+            return null;
+        }else{
+
+            Branch branch = cursorToBranch(cursor);
+            cursor.close();
+            return branch;
+        }
+    }
+
+    public List<Branch> getBranches(){
+        SQLiteDatabase db = getWritableDatabase();
+        Cursor cursor = db.query(TABLE_BRANCH,branchColumns,null,null,
+                null,null,null,null);
+        List<Branch> branchList = new ArrayList<>();
+        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()){
+            Branch branch = cursorToBranch(cursor);
+            branchList.add(branch);
+        }
+        cursor.close();
+        return branchList;
+    }
+
 }
