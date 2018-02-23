@@ -29,7 +29,7 @@ public class ConnectivityReceiver extends BroadcastReceiver {
     }
 
     public static boolean isConnected(){
-        ConnectivityManager cm = (ConnectivityManager) TremapApp.getInstance().getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+        ConnectivityManager cm = (ConnectivityManager) TremapApp.getmInstance().getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
         return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
     }
