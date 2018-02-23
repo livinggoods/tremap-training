@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import com.expansion.lg.kimaru.training.objs.Branch;
+import com.expansion.lg.kimaru.training.objs.Cohort;
 import com.expansion.lg.kimaru.training.objs.SessionAttendance;
 import com.expansion.lg.kimaru.training.objs.SessionTopic;
 import com.expansion.lg.kimaru.training.objs.Training;
@@ -301,6 +302,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             + LON + real_field + ", "
             + ARCHIVED + integer_field + "); ";
 
+    private static final String CREATE_TABLE_COHORT="CREATE TABLE " + TABLE_COHORT + "("
+            + ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+            + COHORT_NAME + varchar_field + ", "
+            + COHORT_NUMBER + varchar_field + ", "
+            + BRANCH_ID + varchar_field + ", "
+            + ARCHIVED + integer_field + "); ";
+
     public DatabaseHelper(Context context){
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
@@ -320,6 +328,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(CREATE_TABLE_TRAINING_TRAINEE);
         db.execSQL(CREATE_TABLE_USERS);
         db.execSQL(CREATE_TABLE_TRAINEE_COMMENTS);
+        db.execSQL(CREATE_TABLE_BRANCH);
+        db.execSQL(CREATE_TABLE_COHORT);
     }
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion){
@@ -361,6 +371,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private String [] trainingCommentColumns = new String[] {ID,TRAINEE_ID, TRAINING_ID,
             COUNTRY, ADDED_BY, DATE_CREATED, CLIENT_TIME, ARCHIVED, COMMENT};
     private String[] branchColumns = new String[] {ID,BRANCH_NAME,BRANCH_CODE,MAPPING_ID,LAT,LON,ARCHIVED};
+    private String[] cohortColumns = new String[] {ID,COHORT_NAME,COHORT_NUMBER,BRANCH_ID,ARCHIVED};
 
     /**
      * **************************************
@@ -1651,6 +1662,85 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
         cursor.close();
         return branchList;
+    }
+
+
+    /**
+     * ************************************
+     *         COHORT                     *
+     * ************************************
+     */
+
+    private Cohort cursorToCohort(Cursor cursor){
+        Cohort cohort = new Cohort();
+        cohort.setId(cursor.getInt(cursor.getColumnIndex(ID)));
+        cohort.setCohortName(cursor.getString(cursor.getColumnIndex(COHORT_NAME)));
+        cohort.setCohortNumber(cursor.getString(cursor.getColumnIndex(COHORT_NUMBER)));
+        cohort.setBranchId(cursor.getInt(cursor.getColumnIndex(BRANCH_ID)));
+        cohort.setArchived(cursor.getInt(cursor.getColumnIndex(ARCHIVED))==1);
+        return cohort;
+    }
+
+    public long addCohort(Cohort cohort){
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues cv = new ContentValues();
+
+        cv.put(ID, cohort.getId());
+        cv.put(COHORT_NAME, cohort.getCohortName());
+        cv.put(COHORT_NUMBER, cohort.getCohortNumber());
+        cv.put(BRANCH_ID, cohort.getBranchId());
+        cv.put(ARCHIVED, cohort.isArchived());
+        long id;
+        if(cohortExists(cohort)){
+            id = db.update(TABLE_COHORT, cv, ID+"='"+cohort.getId()+"'",
+                    null);
+        }else{
+            id = db.insertWithOnConflict(TABLE_COHORT, null, cv,
+                    SQLiteDatabase.CONFLICT_REPLACE);
+        }
+        db.close();
+        return id;
+    }
+
+    public boolean cohortExists(Cohort cohort) {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cur = db.rawQuery("SELECT "+ID+" FROM " + TABLE_COHORT + " WHERE "+
+                ID+" = '" + cohort.getId() + "'", null);
+        boolean exist = (cur.getCount() > 0);
+        cur.close();
+        return exist;
+
+    }
+
+    public Cohort getCohortById(String cohortId){
+        SQLiteDatabase db = getWritableDatabase();
+        String whereClause = ID +" = ?";
+        String[] whereArgs = new String[] {
+                cohortId,
+        };
+        Cursor cursor=db.query(TABLE_COHORT, cohortColumns, whereClause,
+                whereArgs,null,null,null,null);
+        if (!(cursor.moveToFirst()) || cursor.getCount() ==0){
+            return null;
+        }else{
+
+            Cohort cohort = cursorToCohort(cursor);
+            cursor.close();
+            return cohort;
+        }
+    }
+
+    public List<Cohort> getCohorts(){
+        SQLiteDatabase db = getWritableDatabase();
+        Cursor cursor = db.query(TABLE_COHORT,cohortColumns,null,null,
+                null,null,null,null);
+        List<Cohort> cohortList = new ArrayList<>();
+        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()){
+            Cohort cohort = cursorToCohort(cursor);
+            cohortList.add(cohort);
+        }
+        cursor.close();
+        return cohortList;
     }
 
 }
