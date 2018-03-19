@@ -4,5 +4,28 @@
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
+
+    <string name="app_description">Tremap for Training</string>
+
     <string name="action_settings">Settings</string>
+    <string name="delete">DELETE</string>
+    <string name="action_delete">DELETE</string>
+    <string name="action_invite">Invite</string>
+    <string name="training_backdrop">Backdrop image</string>
+
+
+    <string name="training_date">Commenced : %s \n Ended : %s</string>
+    <string name="trainig_detail_overview_title">Overview</string>
+    <string name="training_detail_trainees_title">Videos</string>
+    <string name="movie_detail_reviews_title">Reviews</string>
+
+    <!-- Content description -->
+    <string name="content_description_training_poster">Movie poster image</string>
+    <string name="content_description_training_backdrop">Movie backdrop image</string>
+    <string name="content_description_training_video">Movie video thumbnail</string>
+    <string name="content_description_no_trainings_icon">No movies icon</string>
+
+
+    <string name="trainees_title">Trainees</string>
+    <string name="sessions_title">Sessions</string>
 </resources>

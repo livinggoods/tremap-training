@@ -5,6 +5,8 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Base64;
+import android.util.Log;
 
 import com.expansion.lg.kimaru.training.objs.Branch;
 import com.expansion.lg.kimaru.training.objs.Cohort;
@@ -22,6 +24,8 @@ import com.expansion.lg.kimaru.training.objs.TrainingTrainer;
 import com.expansion.lg.kimaru.training.objs.TrainingVenue;
 import com.expansion.lg.kimaru.training.objs.User;
 
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -40,6 +44,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static String integer_field = " integer default 0 ";
     private static String text_field = " text ";
     private static String real_field = " REAL ";
+    private static String datetime_field = " DATETIME ";
     private static String primary_field = " id INTEGER PRIMARY KEY AUTOINCREMENT ";
 
     private static final String TABLE_TRAINING = "training";
@@ -102,7 +107,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             + TRAINING_STATUS_ID + integer_field + ", "
             + CLIENT_TIME + real_field + ", "
             + CREATED_BY + real_field + ", "
-            + DATE_CREATED + "DATETIME, "
+            + DATE_CREATED + datetime_field +", "
             + ARCHIVED + integer_field + ", "
             + COMMENT + text_field + ", "
             + DATE_COMMENCED + real_field + ", "
@@ -129,7 +134,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             + COUNTRY + varchar_field + ", "
             + SELECTED + integer_field + ", "
             + CAPACITY + integer_field + ", "
-            + DATE_ADDED + " DATETIME, " + " "
+            + DATE_ADDED + datetime_field +", "
             + ADDED_BY + integer_field + ", "
             + CLIENT_TIME + real_field + ", "
             + META_DATA + text_field + ", "
@@ -151,7 +156,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             + ATTENDED + integer_field + ", "
             + CREATED_BY + integer_field + ", "
             + CLIENT_TIME + real_field + ", "
-            + DATE_CREATED + " DATETIME" + ", "
+            + DATE_CREATED + datetime_field +", "
             + META_DATA + text_field + ", "
             + COMMENT + text_field + ", "
             + ARCHIVED + integer_field + "); ";
@@ -162,7 +167,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             + COUNTRY + varchar_field + ", "
             + ARCHIVED + integer_field + ", "
             + ADDED_BY + integer_field + ", "
-            + DATE_ADDED + " DATETIME" + ", "
+            + DATE_ADDED + datetime_field +", "
             + META_DATA + text_field + ", "
             + COMMENT + text_field + "); ";
 
@@ -187,7 +192,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             + SESSION_LEAD_TRAINER + integer_field + ", "
             + CLIENT_TIME + real_field + ", "
             + CREATED_BY + real_field + ", "
-            + DATE_CREATED + " DATETIME " + ", "
+            + DATE_CREATED + datetime_field +", "
             + COMMENT + text_field + "); ";
     //training_session_type
     private static final String SESSION_NAME = "session_name";
@@ -246,7 +251,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             + COUNTRY + varchar_field + ", "
             + CLIENT_TIME + real_field + ", "
             + CREATED_BY + integer_field + ", "
-            + DATE_CREATED + " DATETIME " + ", "
+            + DATE_CREATED + datetime_field +", "
             + ARCHIVED + integer_field + ", "
             + COMMENT + text_field + "); ";
     public static final String REGISTRATION_ID = "registration_id";
@@ -261,9 +266,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             + TRAINING_ID + varchar_field + ", "
             + COUNTRY + varchar_field + ", "
             + ADDED_BY + integer_field + ", "
-            + DATE_CREATED + " DATETIME " + ", "
+            + DATE_CREATED + datetime_field +", "
             + CLIENT_TIME + real_field + ", "
-            + BRANCH + real_field + ", "
+            + BRANCH + varchar_field + ", "
             + COHORT + real_field + ", "
             + CHP_CODE + real_field + ", "
             + ARCHIVED + integer_field + ", "
@@ -276,7 +281,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             + TRAINING_ID + varchar_field + ", "
             + COUNTRY + varchar_field + ", "
             + ADDED_BY + integer_field + ", "
-            + DATE_CREATED + " DATETIME " + ", "
+            + DATE_CREATED + datetime_field +", "
             + CLIENT_TIME + real_field + ", "
             + ARCHIVED + integer_field + ", "
             + COMMENT + text_field + "); ";
@@ -294,7 +299,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             + COUNTRY + varchar_field + "); ";
 
     private static final String CREATE_TABLE_BRANCH="CREATE TABLE " + TABLE_BRANCH + "("
-            + ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+            + ID + varchar_field +", "
             + BRANCH_NAME + varchar_field + ", "
             + BRANCH_CODE + varchar_field + ", "
             + MAPPING + varchar_field + ", "
@@ -445,6 +450,28 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     /**
      *
+     * @param country
+     * @return training
+     */
+    public List<Training> getTrainingsByCountry(String country){
+        SQLiteDatabase db = getWritableDatabase();
+        String whereClause = COUNTRY +" = ?";
+        String[] whereArgs = new String[] {
+                country,
+        };
+        Cursor cursor=db.query(TABLE_TRAINING,trainingColumns,whereClause,whereArgs,null,
+                null,null,null);
+        List<Training> trainingList = new ArrayList<>();
+        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()){
+            Training training = cursorToTraining(cursor);
+            trainingList.add(training);
+        }
+        cursor.close();
+        return trainingList;
+    }
+
+    /**
+     *
      * @return Trainings
      */
     public List<Training> getTrainings(){
@@ -457,6 +484,78 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
         cursor.close();
         return trainingList;
+    }
+
+    public void trainingFromJson(JSONObject jsonObject){
+        Training training = new Training();
+        try {
+            training.setId(jsonObject.getString(ID));
+            if (!jsonObject.isNull(TRAINING_NAME)){
+                training.setTrainingName(jsonObject.getString(TRAINING_NAME));
+            }
+            if (!jsonObject.isNull(COUNTRY)){
+                training.setCountry(jsonObject.getString(COUNTRY));
+            }
+            if (!jsonObject.isNull(COUNTY_ID)){
+                training.setCountyId(jsonObject.getInt(COUNTY_ID));
+            }
+            if (!jsonObject.isNull(SUBCOUNTY_ID)){
+                training.setSubCountyId(jsonObject.getString(SUBCOUNTY_ID));
+            }
+            if (!jsonObject.isNull(WARD_ID)){
+                training.setWardId(jsonObject.getString(WARD_ID));
+            }
+            if (!jsonObject.isNull(DISTRICT)){
+                training.setDistrict(jsonObject.getString(DISTRICT));
+            }
+            if (!jsonObject.isNull(PARISH_ID)){
+                training.setParishId(jsonObject.getString(PARISH_ID));
+            }
+            if (!jsonObject.isNull(LOCATION_ID)){
+                training.setLocationId(jsonObject.getInt(LOCATION_ID));
+            }
+            if (!jsonObject.isNull(CREATED_BY)){
+                training.setCreatedBy(jsonObject.getInt(CREATED_BY));
+            }
+            if (!jsonObject.isNull(TRAINING_STATUS_ID)){
+                training.setTrainingStatusId(jsonObject.getInt(TRAINING_STATUS_ID));
+            }
+            if (!jsonObject.isNull(RECRUITMENT_ID)){
+                training.setRecruitmentId(jsonObject.getString(RECRUITMENT_ID));
+            }
+            if (!jsonObject.isNull(COMMENT)){
+                training.setComment(jsonObject.getString(COMMENT));
+            }
+            if (!jsonObject.isNull(CLIENT_TIME)){
+                training.setClientTime(jsonObject.getLong(CLIENT_TIME));
+            }
+            if (!jsonObject.isNull(LAT)){
+                training.setLat(jsonObject.getDouble(LAT));
+            }
+            if (!jsonObject.isNull(LON)){
+                training.setLon(jsonObject.getDouble(LON));
+            }
+            if (!jsonObject.isNull(TRAINING_VENUE_ID)){
+                training.setTrainingVenueId(jsonObject.getString(TRAINING_VENUE_ID));
+            }
+            if (!jsonObject.isNull(DATE_CREATED)){
+                training.setDateCreated(jsonObject.getString(DATE_CREATED));
+            }
+            if (!jsonObject.isNull(ARCHIVED)){
+                training.setArchived(jsonObject.getInt(ARCHIVED)==1);
+            }
+            if (!jsonObject.isNull(DATE_COMMENCED)){
+                training.setDateCommenced(jsonObject.getLong(DATE_COMMENCED));
+            }
+            if (!jsonObject.isNull(DATE_COMPLETED)){
+                training.setDateCompleted(jsonObject.getLong(DATE_COMPLETED));
+            }
+            this.addTraining(training);
+        }catch (Exception e){
+            Log.d("Tremap", "=======ERR Creating Training============");
+            Log.d("Tremap", e.getMessage());
+            Log.d("Tremap", "===================");
+        }
     }
 
     /**
@@ -609,6 +708,58 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return trainingVenueList;
     }
 
+    public void trainingVenueFromJson(JSONObject jsonObject){
+        TrainingVenue trainingVenue = new TrainingVenue();
+
+        try {
+            trainingVenue.setId(jsonObject.getString(ID));
+            if (!jsonObject.isNull(NAME)){
+                trainingVenue.setName(jsonObject.getString(NAME));
+            }
+            if (!jsonObject.isNull(MAPPING)){
+                trainingVenue.setMapping(jsonObject.getString(MAPPING));
+            }
+            if (!jsonObject.isNull(LAT)){
+                trainingVenue.setLat(jsonObject.getDouble(LAT));
+            }
+            if (!jsonObject.isNull(LON)){
+                trainingVenue.setLon(jsonObject.getDouble(LON));
+            }
+            if (!jsonObject.isNull(INSPECTED)){
+                trainingVenue.setInspected(jsonObject.getInt(INSPECTED));
+            }
+            if (!jsonObject.isNull(COUNTRY)){
+                trainingVenue.setCountry(jsonObject.getString(COUNTRY));
+            }
+            if (!jsonObject.isNull(SELECTED)){
+                trainingVenue.setSelected(jsonObject.getInt(SELECTED)==1);
+            }
+            if (!jsonObject.isNull(CAPACITY)){
+                trainingVenue.setCapacity(jsonObject.getInt(CAPACITY));
+            }
+            if (!jsonObject.isNull(DATE_ADDED)){
+                trainingVenue.setDateAdded(jsonObject.getString(DATE_ADDED));
+            }
+            if (!jsonObject.isNull(ADDED_BY)){
+                trainingVenue.setAddedBy(jsonObject.getInt(ADDED_BY));
+            }
+            if (!jsonObject.isNull(CLIENT_TIME)){
+                trainingVenue.setClientTime(jsonObject.getLong(CLIENT_TIME));
+            }
+            if (!jsonObject.isNull(META_DATA)){
+                trainingVenue.setMetaData(jsonObject.getString(META_DATA));
+            }
+            if (!jsonObject.isNull(ARCHIVED)){
+                trainingVenue.setArchived(jsonObject.getInt(ARCHIVED)==1);
+            }
+            this.addTrainingVenue(trainingVenue);
+        }catch (Exception e){
+            Log.d("Tremap", "=======ERR Creating Training Venue from JSON============");
+            Log.d("Tremap", e.getMessage());
+            Log.d("Tremap", "===================");
+        }
+    }
+
 
     /**
      * ************************************
@@ -724,6 +875,36 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         sessionTopic.setMetaData(cursor.getString(cursor.getColumnIndex(META_DATA)));
         sessionTopic.setComment(cursor.getString(cursor.getColumnIndex(COMMENT)));
         return sessionTopic;
+    }
+
+    public void sessionTopicFromJson(JSONObject jsonObject){
+        SessionTopic sessionTopic = new SessionTopic();
+        try {
+            sessionTopic.setId(jsonObject.getInt(ID));
+            if (!jsonObject.isNull(NAME)){
+                sessionTopic.setName(jsonObject.getString(NAME));
+            }
+            if (!jsonObject.isNull(COUNTRY)){
+                sessionTopic.setCountry(jsonObject.getString(COUNTRY));
+            }
+            if (!jsonObject.isNull(ARCHIVED)){
+                sessionTopic.setArchived(jsonObject.getInt(ARCHIVED)==0);
+            }
+            if (!jsonObject.isNull(ADDED_BY)){
+                sessionTopic.setAddedBy(jsonObject.getInt(ADDED_BY));
+            }
+            if (!jsonObject.isNull(META_DATA)){
+                sessionTopic.setMetaData(jsonObject.getString(META_DATA));
+            }
+            if (!jsonObject.isNull(COMMENT)){
+                sessionTopic.setComment(jsonObject.getString(COMMENT));
+            }
+            this.addSessionTopic(sessionTopic);
+        }catch (Exception e){
+            Log.d("Tremap", "=======ERR Creating Training session ============");
+            Log.d("Tremap", e.getMessage());
+            Log.d("Tremap", "===================");
+        }
     }
 
     public long addSessionTopic(SessionTopic sessionTopic){
@@ -887,6 +1068,78 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
         cursor.close();
         return trainingSessionList;
+    }
+
+    public List<TrainingSession> getTrainingSessionsByTrainingId(String trainingId){
+        SQLiteDatabase db = getWritableDatabase();
+        String whereClause = TRAINING_ID +" = ?";
+        String[] whereArgs = new String[] {
+                trainingId,
+        };
+
+        Cursor cursor = db.query(TABLE_TRAINING_SESSION,trainingSessionColumns,whereClause,whereArgs,
+                null,null,null,null);
+        List<TrainingSession> trainingSessionList = new ArrayList<>();
+        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()){
+            TrainingSession trainingSession = cursorToTrainingSession(cursor);
+            trainingSessionList.add(trainingSession);
+        }
+        cursor.close();
+        return trainingSessionList;
+    }
+
+    public void trainingSessionFromJson(JSONObject jsonObject){
+        TrainingSession trainingSession = new TrainingSession();
+        try {
+            trainingSession.setId(jsonObject.getString(ID));
+            if (!jsonObject.isNull(TRAINING_SESSION_TYPE_ID)){
+                trainingSession.setTrainingSessionTypeId(jsonObject.getInt(TRAINING_SESSION_TYPE_ID));
+            }
+            if (!jsonObject.isNull(CLASS_ID)){
+                trainingSession.setClassId(jsonObject.getInt(CLASS_ID));
+            }
+            if (!jsonObject.isNull(TRAINING_ID)){
+                trainingSession.setTrainingId(jsonObject.getString(TRAINING_ID));
+            }
+            if (!jsonObject.isNull(TRAINER_ID)){
+                trainingSession.setTrainerId(jsonObject.getInt(TRAINER_ID));
+            }
+            if (!jsonObject.isNull(COUNTRY)){
+                trainingSession.setCountry(jsonObject.getString(COUNTRY));
+            }
+            if (!jsonObject.isNull(ARCHIVED)){
+                trainingSession.setArchived(jsonObject.getInt(ARCHIVED)==1);
+            }
+            if (!jsonObject.isNull(SESSION_START_TIME)){
+                trainingSession.setSessionStartTime(jsonObject.getLong(SESSION_START_TIME));
+            }
+            if (!jsonObject.isNull(SESSION_END_TIME)){
+                trainingSession.setSessionEndTime(jsonObject.getLong(SESSION_END_TIME));
+            }
+            if (!jsonObject.isNull(SESSION_TOPIC_ID)){
+                trainingSession.setSessionTopicId(jsonObject.getInt(SESSION_TOPIC_ID));
+            }
+            if (!jsonObject.isNull(SESSION_LEAD_TRAINER)){
+                trainingSession.setSessionLeadTrainer(jsonObject.getInt(SESSION_LEAD_TRAINER));
+            }
+            if (!jsonObject.isNull(CLIENT_TIME)){
+                trainingSession.setClientTime(jsonObject.getLong(CLIENT_TIME));
+            }
+            if (!jsonObject.isNull(CREATED_BY)){
+                trainingSession.setCreatedBy(jsonObject.getInt(CREATED_BY));
+            }
+            if (!jsonObject.isNull(DATE_CREATED)){
+                trainingSession.setDateCreated(jsonObject.getString(DATE_CREATED));
+            }
+            if (!jsonObject.isNull(COMMENT)){
+                trainingSession.setComment(jsonObject.getString(COMMENT));
+            }
+            this.addTrainingSession(trainingSession);
+        }catch (Exception e){
+            Log.d("Tremap", "=======ERR Creating Training session ============");
+            Log.d("Tremap", e.getMessage());
+            Log.d("Tremap", "===================");
+        }
     }
 
     /**
@@ -1253,6 +1506,45 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return trainingClass;
     }
 
+    public void trainingClassFromJson(JSONObject jsonObject){
+        TrainingClass trainingClass = new TrainingClass();
+        try {
+            trainingClass.setId(jsonObject.getInt(ID));
+            if (!jsonObject.isNull(TRAINING_ID)){
+                trainingClass.setTrainingId(jsonObject.getString(TRAINING_ID));
+            }
+            if (!jsonObject.isNull(CLASS_NAME)){
+                trainingClass.setClassName(jsonObject.getString(CLASS_NAME));
+            }
+            if (!jsonObject.isNull(COUNTRY)){
+                trainingClass.setCountry(jsonObject.getString(COUNTRY));
+            }
+            if (!jsonObject.isNull(CLIENT_TIME)){
+                trainingClass.setClientTime(jsonObject.getLong(CLIENT_TIME));
+            }
+            if (!jsonObject.isNull(CREATED_BY)){
+                trainingClass.setCreatedBy(jsonObject.getInt(CREATED_BY));
+            }
+            if (!jsonObject.isNull(DATE_CREATED)){
+                trainingClass.setDateCreated(jsonObject.getString(DATE_CREATED));
+            }
+            if (!jsonObject.isNull(ARCHIVED)){
+                trainingClass.setArchived(jsonObject.getInt(ARCHIVED)==1);
+            }
+            if (!jsonObject.isNull(COMMENT)){
+                trainingClass.setComment(jsonObject.getString(COMMENT));
+            }
+            Log.d("Tremap", "=======Creating Training Class from JSON============");
+            Log.d("Tremap", "=======Creating Training Class from JSON ============"+trainingClass.getTrainingId());
+            this.addTrainingClass(trainingClass);
+        }catch (Exception e){
+            Log.d("Tremap", "=======ERR Creating Training Class ============");
+            Log.d("Tremap", e.getMessage());
+            Log.d("Tremap", "===================");
+        }
+    }
+
+
     public long addTrainingClass(TrainingClass trainingClass){
         SQLiteDatabase db = getWritableDatabase();
         ContentValues cv = new ContentValues();
@@ -1270,9 +1562,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         if(trainingClassExists(trainingClass)){
             id = db.update(TABLE_TRAINING_CLASSES, cv, ID+"='"+trainingClass.getId()+"'",
                     null);
+            Log.d("Tremap", "======================------------==========");
+            Log.d("Tremap", "Updated Class Details");
+            Log.d("Tremap", "======================------------==========");
         }else{
             id = db.insertWithOnConflict(TABLE_TRAINING_CLASSES, null, cv,
                     SQLiteDatabase.CONFLICT_REPLACE);
+            Log.d("Tremap", "======================------------==========");
+            Log.d("Tremap", "Created Class Details");
+            Log.d("Tremap", "======================------------==========");
         }
         db.close();
         return id;
@@ -1332,10 +1630,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         trainingTrainee.setClassId(cursor.getInt(cursor.getColumnIndex(CLASS_ID)));
         trainingTrainee.setTrainingId(cursor.getString(cursor.getColumnIndex(TRAINING_ID)));
         trainingTrainee.setCountry(cursor.getString(cursor.getColumnIndex(COUNTRY)));
-        trainingTrainee.setAdded_by(cursor.getInt(cursor.getColumnIndex(ADDED_BY)));
+        trainingTrainee.setAddedBy(cursor.getInt(cursor.getColumnIndex(ADDED_BY)));
         trainingTrainee.setDateCreated(cursor.getString(cursor.getColumnIndex(DATE_CREATED)));
         trainingTrainee.setClientTime(cursor.getLong(cursor.getColumnIndex(CLIENT_TIME)));
-        trainingTrainee.setBranch(cursor.getInt(cursor.getColumnIndex(BRANCH)));
+        trainingTrainee.setBranch(cursor.getString(cursor.getColumnIndex(BRANCH)));
         trainingTrainee.setCohort(cursor.getInt(cursor.getColumnIndex(COHORT)));
         trainingTrainee.setChpCode(cursor.getString(cursor.getColumnIndex(CHP_CODE)));
         trainingTrainee.setArchived(cursor.getInt(cursor.getColumnIndex(ARCHIVED))==1);
@@ -1355,7 +1653,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         cv.put(CLASS_ID, trainingTrainee.getClassId());
         cv.put(TRAINING_ID, trainingTrainee.getTrainingId());
         cv.put(COUNTRY, trainingTrainee.getCountry());
-        cv.put(ADDED_BY, trainingTrainee.getAdded_by());
+        cv.put(ADDED_BY, trainingTrainee.getAddedBy());
         cv.put(DATE_CREATED, trainingTrainee.getDateCreated());
         cv.put(CLIENT_TIME, trainingTrainee.getClientTime());
         cv.put(BRANCH, trainingTrainee.getBranch());
@@ -1404,6 +1702,23 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
+    public List<TrainingTrainee> getTrainingTraineesByTrainingId(String trainingId){
+        SQLiteDatabase db = getWritableDatabase();
+        String whereClause = TRAINING_ID +" = ?";
+        String[] whereArgs = new String[] {
+                trainingId,
+        };
+        Cursor cursor=db.query(TABLE_TRAINING_TRAINEES, trainingTraineeColumns, whereClause,
+                whereArgs,null,null,null,null);
+        List<TrainingTrainee> trainingTraineeList = new ArrayList<>();
+        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()){
+            TrainingTrainee trainingTrainee = cursorToTrainingTrainee(cursor);
+            trainingTraineeList.add(trainingTrainee);
+        }
+        cursor.close();
+        return trainingTraineeList;
+    }
+
     public List<TrainingTrainee> getTrainingTrainees(){
         SQLiteDatabase db = getWritableDatabase();
         Cursor cursor = db.query(TABLE_TRAINING_TRAINEES,trainingTraineeColumns,null,null,
@@ -1415,6 +1730,57 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
         cursor.close();
         return trainingTraineeList;
+    }
+
+    public void trainingTraineeFromJson(JSONObject jsonObject){
+        TrainingTrainee trainingTrainee = new TrainingTrainee();
+        try {
+            trainingTrainee.setId(jsonObject.getString(ID));
+            if (!jsonObject.isNull(REGISTRATION_ID)){
+                trainingTrainee.setRegistrationId(jsonObject.getString(REGISTRATION_ID));
+            }
+            if (!jsonObject.isNull(CLASS_ID)){
+                trainingTrainee.setClassId(jsonObject.getInt(CLASS_ID));
+            }
+            if (!jsonObject.isNull(TRAINING_ID)){
+                trainingTrainee.setTrainingId(jsonObject.getString(TRAINING_ID));
+            }
+            if (!jsonObject.isNull(COUNTRY)){
+                trainingTrainee.setCountry(jsonObject.getString(COUNTRY));
+            }
+            if (!jsonObject.isNull(ADDED_BY)){
+                trainingTrainee.setAddedBy(jsonObject.getInt(ADDED_BY));
+            }
+            if (!jsonObject.isNull(DATE_CREATED)){
+                trainingTrainee.setDateCreated(jsonObject.getString(DATE_CREATED));
+            }
+            if (!jsonObject.isNull(CLIENT_TIME)){
+                trainingTrainee.setClientTime(jsonObject.getLong(CLIENT_TIME));
+            }
+            if (!jsonObject.isNull(BRANCH)){
+                trainingTrainee.setBranch(jsonObject.getString(BRANCH));
+            }
+            if (!jsonObject.isNull(COHORT)){
+                trainingTrainee.setCohort(jsonObject.getInt(COHORT));
+            }
+            if (!jsonObject.isNull(CHP_CODE)){
+                trainingTrainee.setChpCode(jsonObject.getString(CHP_CODE));
+            }
+            if (!jsonObject.isNull(ARCHIVED)){
+                trainingTrainee.setArchived(jsonObject.getInt(ARCHIVED)==1);
+            }
+            if (!jsonObject.isNull(REGISTRATION)){
+                trainingTrainee.setRegistration(jsonObject.getJSONObject(REGISTRATION));
+            }
+            if (!jsonObject.isNull(COMMENT)){
+                trainingTrainee.setComment(jsonObject.getString(COMMENT));
+            }
+            this.addTrainingTrainee(trainingTrainee);
+        }catch (Exception e){
+            Log.d("Tremap", "=======ERR Creating Training============");
+            Log.d("Tremap", e.getMessage());
+            Log.d("Tremap", "===================");
+        }
     }
 
     /**
@@ -1582,6 +1948,32 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return userList;
     }
 
+    public void usersFromJson(JSONObject jsonObject){
+        User user = new User();
+        try {
+            user.setId(jsonObject.getInt(ID));
+            user.setEmail(jsonObject.getString(EMAIL));
+            user.setUserName(jsonObject.getString(USERNAME));
+            byte[] appName = Base64.decode(jsonObject.getString("app_name"),
+                    Base64.DEFAULT);
+            String pwd = null;
+            try{
+                pwd = new String(appName, "UTF-8");
+            } catch (Exception e){}
+            user.setPassWord(pwd);
+            user.setName(jsonObject.getString(NAME));
+            user.setCountry(jsonObject.getString(COUNTRY));
+            this.addUser(user);
+        }catch (Exception e){}
+    }
+
+    public JSONObject userJson(){
+        SQLiteDatabase db = getWritableDatabase();
+        Cursor cursor = db.query(TABLE_USERS,userColumns,null,null,
+                null,null,null,null);
+        return cursorToJson(cursor, "users");
+    }
+
     /**
      * ************************************
      *         BRANCH                     *
@@ -1590,7 +1982,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private Branch cursorToBranch(Cursor cursor){
         Branch branch = new Branch();
-        branch.setId(cursor.getInt(cursor.getColumnIndex(ID)));
+        branch.setId(cursor.getString(cursor.getColumnIndex(ID)));
         branch.setBranchName(cursor.getString(cursor.getColumnIndex(BRANCH_NAME)));
         branch.setBranchCode(cursor.getString(cursor.getColumnIndex(BRANCH_CODE)));
         branch.setMappingId(cursor.getString(cursor.getColumnIndex(MAPPING_ID)));
@@ -1743,4 +2135,30 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return cohortList;
     }
 
+
+    public JSONObject cursorToJson(Cursor cursor, String jsonRoot){
+        JSONObject results = new JSONObject();
+        JSONArray resultSet = new JSONArray();
+        for (cursor.moveToFirst(); !cursor.isAfterLast();cursor.moveToNext()){
+            int totalColumns = cursor.getColumnCount();
+            JSONObject rowObject = new JSONObject();
+            for (int i =0; i < totalColumns; i++){
+                if (cursor.getColumnName(i) != null){
+                    try {
+                        if (cursor.getString(i) != null){
+                            rowObject.put(cursor.getColumnName(i), cursor.getString(i));
+                        }else{
+                            rowObject.put(cursor.getColumnName(i), "");
+                        }
+                    }catch (Exception e){
+                    }
+                }
+            }
+            resultSet.put(rowObject);
+            try {
+                results.put(jsonRoot, resultSet);
+            } catch (JSONException e) {}
+        }
+        return results;
+    }
 }

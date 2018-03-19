@@ -5,12 +5,14 @@ package com.expansion.lg.kimaru.training.objs;
  */
 
 public class Training {
-    String id, trainingName, country, subCountyId, wardId, district, recruitmentId, parishId;
-    String trainingVenueId, dateCreated, comment;
-    int countyId, locationId, trainingStatusId, createdBy;
-    double lat,lon;
-    Long clientTime, dateCommenced, dateCompleted;
-    boolean archived;
+    private String id, trainingName, country, subCountyId, wardId, district, recruitmentId, parishId;
+    private String trainingVenueId, dateCreated, comment;
+    private int countyId, locationId, trainingStatusId, createdBy;
+    private double lat,lon;
+    private Long clientTime, dateCommenced, dateCompleted;
+    private boolean archived;
+
+    int color = -1;
 
     public Training() {}
 
@@ -208,5 +210,13 @@ public class Training {
 
     public void setArchived(boolean archived) {
         this.archived = archived;
+    }
+
+    public int getColor() {
+        return color;
+    }
+
+    public void setColor(int color) {
+        this.color = color;
     }
 }

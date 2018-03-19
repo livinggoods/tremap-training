@@ -10,6 +10,8 @@ public class TrainingSession {
     boolean archived;
     Long sessionStartTime, sessionEndTime, clientTime;
 
+    int color = -1;
+
     public TrainingSession() {
     }
 
@@ -153,5 +155,13 @@ public class TrainingSession {
 
     public void setClientTime(Long clientTime) {
         this.clientTime = clientTime;
+    }
+
+    public int getColor() {
+        return color;
+    }
+
+    public void setColor(int color) {
+        this.color = color;
     }
 }

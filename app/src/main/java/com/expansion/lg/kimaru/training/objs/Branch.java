@@ -5,8 +5,7 @@ package com.expansion.lg.kimaru.training.objs;
  */
 
 public class Branch {
-    Integer id;
-    String branchName;
+    String id, branchName;
     String branchCode;
     String mappingId;
     Double lat;
@@ -16,7 +15,7 @@ public class Branch {
     public Branch() {
     }
 
-    public Branch(Integer id, String branchName, String branchCode, String mappingId, Double lat,
+    public Branch(String id, String branchName, String branchCode, String mappingId, Double lat,
                   Double lon, boolean archived) {
         this.id = id;
         this.branchName = branchName;
@@ -27,11 +26,11 @@ public class Branch {
         this.archived = archived;
     }
 
-    public Integer getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(String id) {
         this.id = id;
     }
 

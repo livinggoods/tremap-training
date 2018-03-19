@@ -7,18 +7,19 @@ import org.json.JSONObject;
  */
 
 public class TrainingTrainee {
-    String id, registrationId, dateCreated, trainingId, country, chpCode, comment;
-    Integer classId, added_by, branch, cohort;
+    String id, registrationId, dateCreated, trainingId, country, chpCode, comment, branch;
+    Integer classId, addedBy, cohort;
     Long clientTime;
     boolean archived;
     JSONObject registration;
+    int color =-1;
 
     public TrainingTrainee() {
     }
 
     public TrainingTrainee(String id, String registrationId, String dateCreated,
                            String trainingId, String country, String chpCode, String comment,
-                           Integer classId, Integer added_by, Integer branch, Integer cohort,
+                           Integer classId, Integer addedBy, String branch, Integer cohort,
                            Long clientTime, boolean archived, JSONObject registration) {
         this.id = id;
         this.registrationId = registrationId;
@@ -28,7 +29,7 @@ public class TrainingTrainee {
         this.chpCode = chpCode;
         this.comment = comment;
         this.classId = classId;
-        this.added_by = added_by;
+        this.addedBy = addedBy;
         this.branch = branch;
         this.cohort = cohort;
         this.clientTime = clientTime;
@@ -100,20 +101,20 @@ public class TrainingTrainee {
         this.classId = classId;
     }
 
-    public Integer getAdded_by() {
-        return added_by;
-    }
-
-    public void setAdded_by(Integer added_by) {
-        this.added_by = added_by;
-    }
-
-    public Integer getBranch() {
+    public String getBranch() {
         return branch;
     }
 
-    public void setBranch(Integer branch) {
+    public void setBranch(String branch) {
         this.branch = branch;
+    }
+
+    public Integer getAddedBy() {
+        return addedBy;
+    }
+
+    public void setAddedBy(Integer addedBy) {
+        this.addedBy = addedBy;
     }
 
     public Integer getCohort() {
@@ -146,5 +147,13 @@ public class TrainingTrainee {
 
     public void setRegistration(JSONObject registration) {
         this.registration = registration;
+    }
+
+    public int getColor() {
+        return color;
+    }
+
+    public void setColor(int color) {
+        this.color = color;
     }
 }

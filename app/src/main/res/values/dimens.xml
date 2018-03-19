@@ -1,8 +1,35 @@
 <resources>
     <!-- Default screen margins, per the Android Design guidelines. -->
     <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_padding_horizontal">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
     <dimen name="nav_header_vertical_spacing">16dp</dimen>
     <dimen name="nav_header_height">160dp</dimen>
     <dimen name="fab_margin">16dp</dimen>
+
+    <dimen name="profile_width">75dp</dimen>
+    <dimen name="profile_height">75dp</dimen>
+
+    <dimen name="padd_10">10dp</dimen>
+    <dimen name="ic_delete">30dp</dimen>
+    <dimen name="thumbnail">90dp</dimen>
+    <dimen name="padding_list_row">5dp</dimen>
+    <dimen name="msg_text_primary">16sp</dimen>
+    <dimen name="msg_text_secondary">14sp</dimen>
+    <dimen name="icon_width_height">40dp</dimen>
+    <dimen name="icon_star">25dp</dimen>
+    <dimen name="icon_text">22dp</dimen>
+    <dimen name="timestamp">12sp</dimen>
+    <dimen name="app_bar_height">180dp</dimen>
+    <dimen name="training_detail_content_width">@dimen/match_parent</dimen>
+    <dimen name="training_detail_content_margin_left_right">0dp</dimen>
+    <dimen name="training_detail_cards_margin_left_right">0dp</dimen>
+    <integer name="training_detail_content_elevation_in_dp">6</integer>
+    <integer name="training_detail_fab_elevation_in_dp">10</integer>
+    <dimen name="training_detail_content_overlay">0dp</dimen>
+
+    <dimen name="spacing_small">4dp</dimen>
+    <dimen name="spacing_medium">8dp</dimen>
+
+
 </resources>
