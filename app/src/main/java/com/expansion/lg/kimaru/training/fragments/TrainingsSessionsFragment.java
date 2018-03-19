@@ -13,6 +13,8 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.view.ActionMode;
@@ -106,16 +108,25 @@ public class TrainingsSessionsFragment extends Fragment implements TrainingSessi
             @Override
             public void onIconClicked(int position) {
                 TrainingSession session = sessions.get(position);
+                SessionAttendanceFragment sessionAttendanceFragment = new SessionAttendanceFragment();
+                Fragment fragment = sessionAttendanceFragment;
+                FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                fragmentTransaction.setCustomAnimations(android.R.anim.slide_in_left, android.R.anim.slide_out_right);
+                fragmentTransaction.replace(R.id.frame, fragment);
+                fragmentTransaction.commitAllowingStateLoss();
             }
 
             @Override
             public void onIconImportantClicked(int position) {
                 TrainingSession session = sessions.get(position);
+                this.onIconClicked(position);
             }
 
             @Override
             public void onMessageRowClicked(int position) {
                 TrainingSession session = sessions.get(position);
+                this.onIconClicked(position);
             }
 
             @Override
