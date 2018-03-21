@@ -278,7 +278,9 @@ public class TrainingsTraineesFragment extends Fragment implements TraineeRecycl
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle(training.getTrainingName() + " Trainees");
+        if (training != null){
+            ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle(training.getTrainingName() + " Trainees");
+        }
         setHasOptionsMenu(false);
     }
 

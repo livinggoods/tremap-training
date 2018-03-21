@@ -6,40 +6,33 @@ package com.expansion.lg.kimaru.training.fragments;
 
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.graphics.Canvas;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.view.ActionMode;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.helper.ItemTouchHelper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.widget.Button;
 
 import com.expansion.lg.kimaru.training.R;
-import com.expansion.lg.kimaru.training.adapters.TrainingListAdapter;
+import com.expansion.lg.kimaru.training.adapters.SessionAttendanceListAdapter;
 import com.expansion.lg.kimaru.training.database.DatabaseHelper;
 import com.expansion.lg.kimaru.training.network.TrainingDataSync;
-import com.expansion.lg.kimaru.training.objs.Training;
+import com.expansion.lg.kimaru.training.objs.SessionAttendance;
+import com.expansion.lg.kimaru.training.objs.TrainingSession;
 import com.expansion.lg.kimaru.training.receivers.ConnectivityReceiver;
-import com.expansion.lg.kimaru.training.swipehelpers.TrainingRecyclerItemTouchHelper;
 import com.expansion.lg.kimaru.training.utils.DividerItemDecoration;
-import com.expansion.lg.kimaru.training.utils.SessionManagement;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,9 +48,14 @@ import java.util.List;
 //AppCompatActivity implements TrainingRecyclerItemTouchHelper.RecyclerItemTouchHelperListener
 public class SessionAttendanceFragment extends Fragment {
     private OnFragmentInteractionListener mListener;
-
+    private RecyclerView recyclerView;
+    private SwipeRefreshLayout swipeRefreshLayout;
+    private SessionAttendanceListAdapter rAdapter;
+    List<SessionAttendance> sessionAttendances = new ArrayList<>();
     FloatingActionButton fab;
+    Button btnGetSelected;
 
+    TrainingSession session = null;
     public SessionAttendanceFragment() {}
 
     @Override
@@ -71,8 +69,43 @@ public class SessionAttendanceFragment extends Fragment {
                              Bundle savedInstanceState) {
         setHasOptionsMenu(true);
         View v;
-        v =  inflater.inflate(R.layout.fragment_item_list, container, false);
+        v =  inflater.inflate(R.layout.fragment_attendance, container, false);
+        recyclerView = v.findViewById(R.id.list);
+        btnGetSelected = v.findViewById(R.id.btnGetSelected);
+        swipeRefreshLayout = v.findViewById(R.id.swipe_refresh_layout);
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                getSessionAttendanceData();
+            }
+        });
+        rAdapter = new SessionAttendanceListAdapter(this.getContext(), sessionAttendances, new SessionAttendanceListAdapter.SessionAttendanceListAdapterListener() {
+            @Override
+            public void onRowLongClicked(int position) {
 
+            }
+        });
+        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getContext());
+        recyclerView.setLayoutManager(mLayoutManager);
+        recyclerView.setItemAnimator(new DefaultItemAnimator());
+        recyclerView.addItemDecoration(new DividerItemDecoration(getContext(), LinearLayoutManager.VERTICAL));
+        recyclerView.setAdapter(rAdapter);
+        swipeRefreshLayout.post(new Runnable() {
+            @Override
+            public void run() {
+                getSessionAttendanceData();
+            }
+        });
+
+        btnGetSelected.setVisibility(View.VISIBLE);
+        btnGetSelected.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.d("Tremap","))))))))))))))))))))))))");
+                Log.d("Tremap","CLICKED");
+                Log.d("Tremap","((((((((((((((((((((((((");
+            }
+        });
         return v;
     }
 
@@ -174,8 +207,24 @@ public class SessionAttendanceFragment extends Fragment {
 
 
 
-    private void getTrainings() {
+    private void getSessionAttendanceData() {
+        swipeRefreshLayout.setRefreshing(true);
+        try{
+            new TrainingDataSync(getContext()).getSessionAttendance(session.getTrainingId());
+        }catch (Exception e){}
+        DatabaseHelper databaseHelper = new DatabaseHelper(getContext());
+        sessionAttendances.clear();
 
+        try {
+            List<SessionAttendance> sessions = new ArrayList<>();
+            sessions = databaseHelper.getSessionAttendancesBySessionId(session.getId());
+            for (SessionAttendance s: sessions){
+                sessionAttendances.add(s);
+            }
+            rAdapter.notifyDataSetChanged();
+            swipeRefreshLayout.setRefreshing(false);
+        }catch (Exception e){}
+        swipeRefreshLayout.setRefreshing(false);
     }
 
 

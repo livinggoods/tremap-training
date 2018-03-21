@@ -40,6 +40,7 @@ import com.expansion.lg.kimaru.training.R;
 import com.expansion.lg.kimaru.training.database.DatabaseHelper;
 import com.expansion.lg.kimaru.training.network.TrainingDataSync;
 import com.expansion.lg.kimaru.training.objs.Training;
+import com.expansion.lg.kimaru.training.objs.TrainingTrainee;
 import com.expansion.lg.kimaru.training.receivers.ConnectivityReceiver;
 import com.expansion.lg.kimaru.training.utils.charts.BarChartItem;
 import com.expansion.lg.kimaru.training.utils.charts.ChartItem;
@@ -66,6 +67,8 @@ import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.github.mikephil.charting.utils.ColorTemplate;
 import com.github.mikephil.charting.utils.Utils;
 
+
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -241,8 +244,27 @@ public class TrainingDetailsFragment extends Fragment implements  View.OnClickLi
     private PieData generateDataPie() {
 
         ArrayList<PieEntry> entries = new ArrayList<PieEntry>();
-        entries.add((new PieEntry((float) 39, "Male")));
-        entries.add((new PieEntry((float) 82, "Female")));
+
+        DatabaseHelper databaseHelper = new DatabaseHelper(getContext());
+        //trainees
+        List<TrainingTrainee> traineeList = new ArrayList<>();
+        traineeList = databaseHelper.getTrainingTraineesByTrainingId(training.getId());
+        int male = 0, female = 0;
+
+        for (TrainingTrainee trainee:traineeList){
+            //JSONObj
+            try{
+                String gender = trainee.getRegistration().getString("gender");
+                if (gender.equalsIgnoreCase("male")){
+                    male +=1;
+                }else{
+                    female +=1;
+                }
+            } catch (Exception e){}
+        }
+
+        entries.add((new PieEntry((float) male, "Male")));
+        entries.add((new PieEntry((float) female, "Female")));
 
 
         PieDataSet d = new PieDataSet(entries, "");
@@ -308,12 +330,6 @@ public class TrainingDetailsFragment extends Fragment implements  View.OnClickLi
         mChartSession.setTransparentCircleRadius(61f);
         mChartSession.setDrawCenterText(true);
         mChartSession.setRotationAngle(0);
-        mChartSession.setOnClickListener(new DebouncingOnClickListener() {
-            @Override
-            public void doClick(View v) {
-                Toast.makeText(getContext(), "CLICKED", Toast.LENGTH_SHORT).show();
-            }
-        });
         // ena2ble rotation of the chart by touch
         mChartSession.setRotationEnabled(true);
         mChartSession.setHighlightPerTapEnabled(true);

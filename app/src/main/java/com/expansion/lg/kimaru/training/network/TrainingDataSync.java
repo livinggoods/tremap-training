@@ -253,4 +253,44 @@ public class TrainingDataSync {
         protected void onPostExecute(Void result) {
         }
     }
+
+
+
+    public void getSessionAttendance(String trainingId){
+        new getSessionAttendances().execute(trainingId);
+    }
+
+    private class getSessionAttendances extends AsyncTask<String, Void, String>{
+        @Override
+        protected void onPreExecute(){
+            super.onPreExecute();
+        }
+
+        @Override
+        protected String doInBackground(String... strings){
+            String trainingId = strings[0];
+            JsonParser jsonParser = new JsonParser();
+            DatabaseHelper databaseHelper = new DatabaseHelper(context);
+            SessionManagement sessionManagement = new SessionManagement(context);
+            String url = sessionManagement.getApiUrl()+sessionManagement
+                    .getSessionAttendanceEndpoint() + "/"+trainingId;
+            String json = jsonParser.getJSONFromUrl(url);
+            if (json != null){
+                try{
+                    JSONArray attendances = new JSONObject(json).getJSONArray(sessionManagement.getSessionAttendanceJSONRoot());
+                    for (int x = 0; x <attendances.length(); x++){
+                        databaseHelper.sessionAttendanceFromJSON(attendances.getJSONObject(x));
+                    }
+                }catch (Exception e){
+                    Log.d("Tremap","///////////////////////////////");
+                    Log.d("Tremap", e.getMessage());
+                    Log.d("Tremap","///////////////////////////////");
+                }
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String result){}
+    }
 }

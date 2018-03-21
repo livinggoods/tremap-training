@@ -22,6 +22,7 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -107,8 +108,10 @@ public class TrainingsSessionsFragment extends Fragment implements TrainingSessi
         rAdapter = new TrainingSessionListAdapter(this.getContext(), sessions, new TrainingSessionListAdapter.TrainingSessionListAdapterListener() {
             @Override
             public void onIconClicked(int position) {
+
                 TrainingSession session = sessions.get(position);
                 SessionAttendanceFragment sessionAttendanceFragment = new SessionAttendanceFragment();
+                sessionAttendanceFragment.session = session;
                 Fragment fragment = sessionAttendanceFragment;
                 FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
                 FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
@@ -271,7 +274,6 @@ public class TrainingsSessionsFragment extends Fragment implements TrainingSessi
 
             DatabaseHelper databaseHelper = new DatabaseHelper(getContext());
             List<TrainingSession> sessionList = new ArrayList<>();
-
             sessionList = databaseHelper.getTrainingSessionsByTrainingId(training.getId());
             for (TrainingSession session:sessionList){
                 session.setColor(getRandomMaterialColor("400"));

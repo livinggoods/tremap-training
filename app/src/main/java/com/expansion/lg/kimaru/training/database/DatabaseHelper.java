@@ -844,6 +844,23 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
+    public List<SessionAttendance> getSessionAttendancesBySessionId(String sessionId){
+        SQLiteDatabase db = getWritableDatabase();
+        String whereClause = TRAINING_SESSION_ID +" = ?";
+        String[] whereArgs = new String[] {
+                sessionId,
+        };
+        Cursor cursor=db.query(TABLE_SESSION_ATTENDANCE, sessionAttendanceColumns, whereClause,
+                whereArgs,null,null,null,null);
+        List<SessionAttendance> sessionAttendanceList = new ArrayList<>();
+        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()){
+            SessionAttendance sessionAttendance = cursorToSessionAttendance(cursor);
+            sessionAttendanceList.add(sessionAttendance);
+        }
+        cursor.close();
+        return sessionAttendanceList;
+    }
+
     public List<SessionAttendance> getSessionAttendances(){
         SQLiteDatabase db = getWritableDatabase();
         Cursor cursor = db.query(TABLE_SESSION_ATTENDANCE,sessionAttendanceColumns,null,null,
@@ -855,6 +872,52 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
         cursor.close();
         return sessionAttendanceList;
+    }
+
+    public void sessionAttendanceFromJSON(JSONObject jsonObject){
+        SessionAttendance sessionAttendance = new SessionAttendance();
+        try {
+            sessionAttendance.setId(jsonObject.getString(ID));
+            if (!jsonObject.isNull(TRAINING_SESSION_ID)){
+                sessionAttendance.setTrainingSessionId(jsonObject.getString(TRAINING_SESSION_ID));
+            }
+            if (!jsonObject.isNull(TRAINEE_ID)){
+                sessionAttendance.setTraineeId(jsonObject.getString(TRAINEE_ID));
+            }
+            if (!jsonObject.isNull(TRAINING_SESSION_TYPE_ID)){
+                sessionAttendance.setTrainingSessionTypeId(jsonObject.getInt(TRAINING_SESSION_TYPE_ID));
+            }
+            if (!jsonObject.isNull(TRAINING_ID)){
+                sessionAttendance.setTrainingId(jsonObject.getString(TRAINING_ID));
+            }
+            if (!jsonObject.isNull(COUNTRY)){
+                sessionAttendance.setCountry(jsonObject.getString(COUNTRY));
+            }
+            if (!jsonObject.isNull(ATTENDED)){
+                sessionAttendance.setAttended(jsonObject.getInt(ATTENDED)==1);
+            }
+            if (!jsonObject.isNull(CREATED_BY)){
+                sessionAttendance.setCreatedBy(jsonObject.getInt(CREATED_BY));
+            }
+            if (!jsonObject.isNull(CLIENT_TIME)){
+                sessionAttendance.setClientTime(jsonObject.getLong(CLIENT_TIME));
+            }
+            if (!jsonObject.isNull(DATE_CREATED)){
+                sessionAttendance.setDateCreated(jsonObject.getString(DATE_CREATED));
+            }
+            if (!jsonObject.isNull(META_DATA)){
+                sessionAttendance.setMetaData(jsonObject.getString(META_DATA));
+            }
+            if (!jsonObject.isNull(COMMENT)){
+                sessionAttendance.setComment(jsonObject.getString(COMMENT));
+            }
+            if (!jsonObject.isNull(ARCHIVED)){
+                sessionAttendance.setArchived(jsonObject.getInt(ARCHIVED)==1);
+            }
+            this.addSessionAttendance(sessionAttendance);
+        }catch (Exception e){
+            Log.d("TremapJSON", e.getMessage());
+        }
     }
 
 
