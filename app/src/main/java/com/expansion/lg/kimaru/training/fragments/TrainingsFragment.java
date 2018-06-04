@@ -32,6 +32,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.expansion.lg.kimaru.training.R;
+import com.expansion.lg.kimaru.training.activity.MainActivity;
 import com.expansion.lg.kimaru.training.adapters.TrainingListAdapter;
 import com.expansion.lg.kimaru.training.network.TrainingDataSync;
 import com.expansion.lg.kimaru.training.objs.Training;
@@ -79,6 +80,9 @@ public class TrainingsFragment extends Fragment implements TrainingRecyclerItemT
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         setHasOptionsMenu(true);
+
+        MainActivity.backFragment = new HomeFragment();
+
         View v;
         v =  inflater.inflate(R.layout.fragment_recycler, container, false);
         textshow = (TextView) v.findViewById(R.id.textShow);
@@ -115,9 +119,9 @@ public class TrainingsFragment extends Fragment implements TrainingRecyclerItemT
             @Override
             public void onIconClicked(int position) {
                 Training training = trainings.get(position);
-                TrainingDetailsFragment trainingDetailsFragment = new TrainingDetailsFragment();
-                trainingDetailsFragment.training = training;
-                Fragment fragment = trainingDetailsFragment;
+                TrainingViewFragment trainingViewFragment = new TrainingViewFragment();
+                trainingViewFragment.training = training;
+                Fragment fragment = trainingViewFragment;
                 FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
                 FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
                 fragmentTransaction.setCustomAnimations(android.R.anim.slide_in_left, android.R.anim.slide_out_right);
@@ -128,19 +132,17 @@ public class TrainingsFragment extends Fragment implements TrainingRecyclerItemT
 
             @Override
             public void onIconImportantClicked(int position) {
-                Training training = trainings.get(position);
-                Toast.makeText(getContext(), "You have selected Important Icon fpr "+training.getTrainingName(), Toast.LENGTH_SHORT).show();
+                onIconClicked(position);
             }
 
             @Override
             public void onMessageRowClicked(int position) {
-                Training training = trainings.get(position);
-                Toast.makeText(getContext(), "You have selected "+training.getTrainingName(), Toast.LENGTH_SHORT).show();
+                onIconClicked(position);
             }
 
             @Override
             public void onRowLongClicked(int position) {
-                Training training = trainings.get(position);
+                onIconClicked(position);
             }
 
         });

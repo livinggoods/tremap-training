@@ -48,18 +48,48 @@ public class SplashScreen extends AppCompatActivity implements ConnectivityRecei
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash_screen);
         imageView = (ImageView) findViewById(R.id.imageView);
+        aniRotateClk = AnimationUtils.loadAnimation(getApplicationContext(),R.anim.rotate_clockwise);
+        aniRotateClk.start();
+        imageView.startAnimation(aniRotateClk);
+        if (savedInstanceState == null){
+            startApp();
+        }
+
+
+    }
+
+    private void startApp(){
+        //load the photo in the placeholder
         Glide.with(this).load(getImage("lg_bg"))
                 .crossFade()
                 .thumbnail(0.5f)
                 .bitmapTransform(new CircleTransform(this))
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .into(imageView);
-        aniRotateClk = AnimationUtils.loadAnimation(getApplicationContext(),R.anim.rotate_clockwise);
+        //Init the animation
         aniRotateClk.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationStart(Animation animation) {
-                new TrainingDataSync(getApplicationContext()).syncSessionTopics();
-                new PrefetchData().execute();
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            new TrainingDataSync(getApplicationContext()).syncSessionTopics();
+                            new TrainingDataSync(getApplicationContext()).getTraineeStatusFromCloud();
+                            new PrefetchData().execute();
+                            Log.d("Tremap", "GETTING Training data from the Cloud");
+                        } catch (Exception e) {
+                            Log.d("Tremap", "ERROR GETTING TRAINING DATA");
+                            Log.d("Tremap", e.getMessage());
+                        }
+                    }
+                }).start();
+                try {
+                    Thread.sleep(5000);
+                    canProceed = true;
+                }catch (Exception e){}
+
+
             }
 
             @Override
@@ -69,6 +99,7 @@ public class SplashScreen extends AppCompatActivity implements ConnectivityRecei
                     i.putExtra("now_playing", "Kimaru");
                     i.putExtra("earned", "millions");
                     startActivity(i);
+                    finish();
                 }else{
                     animateLogo();
                 }
@@ -79,14 +110,7 @@ public class SplashScreen extends AppCompatActivity implements ConnectivityRecei
 
             }
         });
-        imageView.startAnimation(aniRotateClk);
-
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                canProceed = true;
-            }
-        }, 6000);
+        animateLogo();
 
     }
 
@@ -105,7 +129,7 @@ public class SplashScreen extends AppCompatActivity implements ConnectivityRecei
 			/*
 			 * Will make http call here This call will download required data
 			 * before launching the app
-			 * example:
+			 * the downloaded data include:
 			 * 1. Downloading login details and storing them in the App
 			 * 2. Download initial training data {training, classes and trainees}
 			 * 2. Downloading images
@@ -150,14 +174,8 @@ public class SplashScreen extends AppCompatActivity implements ConnectivityRecei
     @Override
     protected void onResume(){
         super.onResume();
+        startApp();
         TremapApp.getmInstance().setConnectivityListener(this);
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                canProceed = true;
-            }
-        }, 6000);
-        animateLogo();
     }
     @Override
     public void onNetworkConnectionChanged(boolean isConnected){

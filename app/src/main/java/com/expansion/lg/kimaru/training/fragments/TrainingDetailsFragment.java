@@ -90,14 +90,10 @@ public class TrainingDetailsFragment extends Fragment implements  View.OnClickLi
     TextView trainingComment;
     CardView cardTrainingDetail;
     CardView cardMovieOverview;
-    CardView cardMovieVideos;
-    RecyclerView movieVideos;
-    CardView cardMovieReviews;
-    RecyclerView movieReviews;
     PieChart mChartTrainees, mChartSession;
     LineChart attendanceChart;
     Typeface mTfLight, mTfRegular;
-    Button traineesButton, sessionsButton;
+    Button traineesButton, sessionsButton, classesButton;
 
 
     @Override
@@ -108,11 +104,12 @@ public class TrainingDetailsFragment extends Fragment implements  View.OnClickLi
         trainingNameText = v.findViewById(R.id.text_training_name);
         trainingClassSize = v.findViewById(R.id.text_movie_user_rating);
         trainingDates = v.findViewById(R.id.text_movie_release_date);
-        trainingComment = v.findViewById(R.id.text_training_comment);
+        //trainingComment = v.findViewById(R.id.text_training_comment);
         cardTrainingDetail = v.findViewById(R.id.card_training_detail);
         cardMovieOverview = v.findViewById(R.id.card_movie_overview);
-        traineesButton = v.findViewById(R.id.traineesButton);
-        sessionsButton = v.findViewById(R.id.sessionsButton);
+        traineesButton = v.findViewById(R.id.trainees);
+        sessionsButton = v.findViewById(R.id.sessions);
+        classesButton = v.findViewById(R.id.classes);
         //cardMovieVideos = v.findViewById(R.id.card_movie_videos);
 //        movieVideos = v.findViewById(R.id.movie_videos);
         getTrainingDetailsFromApi();
@@ -164,6 +161,24 @@ public class TrainingDetailsFragment extends Fragment implements  View.OnClickLi
             }
 
         });
+        classesButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Fragment fragment;
+                FragmentTransaction fragmentTransaction;
+
+                TrainingClassesFragment trainingClassesFragment = new TrainingClassesFragment();
+                trainingClassesFragment.training = training;
+                fragment = trainingClassesFragment;
+                fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
+                fragmentTransaction.setCustomAnimations(android.R.anim.fade_in,
+                        android.R.anim.fade_out);
+                fragmentTransaction.replace(R.id.frame, fragment);
+                fragmentTransaction.commitAllowingStateLoss();
+            }
+
+        });
+
         return v;
     }
 
@@ -199,7 +214,7 @@ public class TrainingDetailsFragment extends Fragment implements  View.OnClickLi
             String releaseDate = String.format(getString(R.string.training_date),
                     String.valueOf(training.getDateCommenced()), String.valueOf(training.getClientTime()));
             trainingDates.setText(releaseDate);
-            trainingComment.setText(training.getComment());
+            //trainingComment.setText(training.getComment());
         }
 
     }

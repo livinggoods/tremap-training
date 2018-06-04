@@ -15,6 +15,10 @@ public class DisplayDate {
     SimpleDateFormat timeFormatter = new SimpleDateFormat("hh/mm/a");
     SimpleDateFormat dateTimeFormatter = new SimpleDateFormat("MM/dd/yyyy hh/mm/a");
 
+    SimpleDateFormat yearFormatter = new SimpleDateFormat("yyyy");
+    SimpleDateFormat monthFormatter = new SimpleDateFormat("MM");
+    SimpleDateFormat dayFormatter = new SimpleDateFormat("dd");
+
     // public DisplayDate (){}
     public DisplayDate(Long epoch){
         this.epoch = epoch;
@@ -37,5 +41,18 @@ public class DisplayDate {
     public String dateAndTime() {
         Date date = new Date (this.epoch);
         return dateTimeFormatter.format(date);
+    }
+
+    public String dayOnly() {
+        Date date = new Date (this.epoch);
+        return dayFormatter.format(date);
+    }
+    public String monthOnly() {
+        Date date = new Date (this.epoch);
+        return monthFormatter.format(date);
+    }
+    public String yearOnly() {
+        Date date = new Date (this.epoch);
+        return yearFormatter.format(date);
     }
 }

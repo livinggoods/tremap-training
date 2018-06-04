@@ -12,6 +12,7 @@ import com.expansion.lg.kimaru.training.objs.Branch;
 import com.expansion.lg.kimaru.training.objs.Cohort;
 import com.expansion.lg.kimaru.training.objs.SessionAttendance;
 import com.expansion.lg.kimaru.training.objs.SessionTopic;
+import com.expansion.lg.kimaru.training.objs.TraineeStatus;
 import com.expansion.lg.kimaru.training.objs.Training;
 import com.expansion.lg.kimaru.training.objs.TrainingClass;
 import com.expansion.lg.kimaru.training.objs.TrainingComment;
@@ -23,13 +24,16 @@ import com.expansion.lg.kimaru.training.objs.TrainingTrainee;
 import com.expansion.lg.kimaru.training.objs.TrainingTrainer;
 import com.expansion.lg.kimaru.training.objs.TrainingVenue;
 import com.expansion.lg.kimaru.training.objs.User;
+import com.expansion.lg.kimaru.training.utils.DisplayDate;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Created by kimaru on 2/21/18.
@@ -62,6 +66,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String TABLE_TRAINING_COMMENTS = "training_comments";
     private static final String TABLE_BRANCH = "branch";
     private static final String TABLE_COHORT = "cohort";
+    private static final String TABLE_TRAINEE_STATUS = "trainee_status";
 
     // fields for Training
     private static final String ID = "id";
@@ -89,6 +94,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String BRANCH_CODE = "branch_code";
     private static final String COHORT_NUMBER = "cohort_number";
     private static final String COHORT_NAME = "cohort_name";
+    private static final String TRAINEE_STATUS = "trainee_status";
     private static final String BRANCH_ID = "branch_id";
     public static final String CREATE_TABLE_TRAINING ="CREATE TABLE " + TABLE_TRAINING + "("
             + ID + varchar_field +", "
@@ -272,6 +278,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             + COHORT + real_field + ", "
             + CHP_CODE + real_field + ", "
             + ARCHIVED + integer_field + ", "
+            + TRAINEE_STATUS + integer_field + ", "
             + REGISTRATION + text_field + ", " //will be storing the JSON
             + COMMENT + text_field + "); ";
 
@@ -314,6 +321,17 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             + BRANCH_ID + varchar_field + ", "
             + ARCHIVED + integer_field + "); ";
 
+
+    private static final String CREATE_TABLE_TRAINEE_STATUS="CREATE TABLE " + TABLE_TRAINEE_STATUS + "("
+            + ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+            + NAME + varchar_field + ", "
+            + ARCHIVED + integer_field + ", "
+            + READONLY + integer_field + ", "
+            + COUNTRY + varchar_field + ", "
+            + CLIENT_TIME + real_field + ", "
+            + CREATED_BY + integer_field + ", "
+            + DATE_CREATED + varchar_field + "); ";
+
     public DatabaseHelper(Context context){
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
@@ -335,6 +353,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(CREATE_TABLE_TRAINEE_COMMENTS);
         db.execSQL(CREATE_TABLE_BRANCH);
         db.execSQL(CREATE_TABLE_COHORT);
+        db.execSQL(CREATE_TABLE_TRAINEE_STATUS);
     }
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion){
@@ -371,12 +390,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private String [] trainingTraineeColumns = new String[] {ID, REGISTRATION_ID, CLASS_ID,
             TRAINING_ID, COUNTRY, ADDED_BY, DATE_CREATED, CLIENT_TIME, BRANCH, COHORT, CHP_CODE,
-            ARCHIVED, REGISTRATION, COMMENT};
+            ARCHIVED, REGISTRATION, COMMENT, TRAINEE_STATUS};
     private String [] userColumns = new String[] {ID, EMAIL, USERNAME, PASSWORD, NAME, COUNTRY};
     private String [] trainingCommentColumns = new String[] {ID,TRAINEE_ID, TRAINING_ID,
             COUNTRY, ADDED_BY, DATE_CREATED, CLIENT_TIME, ARCHIVED, COMMENT};
     private String[] branchColumns = new String[] {ID,BRANCH_NAME,BRANCH_CODE,MAPPING_ID,LAT,LON,ARCHIVED};
     private String[] cohortColumns = new String[] {ID,COHORT_NAME,COHORT_NUMBER,BRANCH_ID,ARCHIVED};
+    private String[] traineeStatusColumns = new String[] {ID,NAME,ARCHIVED,READONLY,COUNTRY,
+            CLIENT_TIME, CREATED_BY, DATE_CREATED};
 
     /**
      * **************************************
@@ -788,6 +809,34 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return sessionAttendance;
     }
 
+    public void generateSessionAttendance(String trainingId){
+        /**
+         * get all topics
+         * for each topic, get trainees
+         * for each trainee, create sesssion
+         */
+        for (TrainingSession session : getTrainingSessionsByTrainingId(trainingId)){
+            for (TrainingTrainee trainee : getTrainingTraineesByTrainingId(trainingId)){
+                //if training_id and session_id exists, do not create one
+                if (getSessionAttendancesByTraineeIdAndTrainindId(trainee.getId(), trainingId, session.getId()) == null) {
+                    Long currentDate = new Date().getTime();
+                    SessionAttendance s = new SessionAttendance();
+                    s.setId(UUID.randomUUID().toString());
+                    s.setTrainingSessionId(session.getId());
+                    s.setTraineeId(trainee.getId());
+                    s.setTrainingId(trainingId);
+                    s.setCountry(session.getCountry());
+                    s.setDateCreated(new DisplayDate(currentDate).dateAndTime());
+                    s.setCreatedBy(1);
+                    s.setAttended(false);
+                    s.setArchived(false);
+                    s.setClientTime(currentDate);
+                    addSessionAttendance(s);
+                }
+            }
+        }
+    }
+
     public long addSessionAttendance(SessionAttendance sessionAttendance){
         SQLiteDatabase db = getWritableDatabase();
         ContentValues cv = new ContentValues();
@@ -859,6 +908,44 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
         cursor.close();
         return sessionAttendanceList;
+    }
+
+    public List<SessionAttendance> getSessionAttendancesByTraineeId(String traineeId){
+        SQLiteDatabase db = getWritableDatabase();
+        String whereClause = TRAINEE_ID +" = ?";
+        String[] whereArgs = new String[] {
+                traineeId,
+        };
+        Cursor cursor=db.query(TABLE_SESSION_ATTENDANCE, sessionAttendanceColumns, whereClause,
+                whereArgs,null,null,null,null);
+        List<SessionAttendance> sessionAttendanceList = new ArrayList<>();
+        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()){
+            SessionAttendance sessionAttendance = cursorToSessionAttendance(cursor);
+            sessionAttendanceList.add(sessionAttendance);
+        }
+        cursor.close();
+        return sessionAttendanceList;
+    }
+
+    public SessionAttendance getSessionAttendancesByTraineeIdAndTrainindId(String traineeId,
+                                                                           String trainingId, String sessionId){
+        SQLiteDatabase db = getWritableDatabase();
+        String whereClause = TRAINEE_ID +" = ? AND " + TRAINING_ID +" = ? AND "+TRAINING_SESSION_ID+" = ?";
+        String[] whereArgs = new String[] {
+                traineeId,
+                trainingId,
+                sessionId
+        };
+        Cursor cursor=db.query(TABLE_SESSION_ATTENDANCE, sessionAttendanceColumns, whereClause,
+                whereArgs,null,null,null,null);
+        if (!(cursor.moveToFirst()) || cursor.getCount() ==0){
+            return null;
+        }else{
+
+            SessionAttendance sessionAttendance = cursorToSessionAttendance(cursor);
+            cursor.close();
+            return sessionAttendance;
+        }
     }
 
     public List<SessionAttendance> getSessionAttendances(){
@@ -1199,9 +1286,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             }
             this.addTrainingSession(trainingSession);
         }catch (Exception e){
-            Log.d("Tremap", "=======ERR Creating Training session ============");
             Log.d("Tremap", e.getMessage());
-            Log.d("Tremap", "===================");
         }
     }
 
@@ -1667,6 +1752,22 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
+    public List<TrainingClass> getTrainingClassByTrainingId(String trainingId){
+        SQLiteDatabase db = getWritableDatabase();
+        String whereClause = TRAINING_ID +" = ?";
+        String[] whereArgs = new String[] {
+                trainingId,
+        };
+        Cursor cursor=db.query(TABLE_TRAINING_CLASSES, trainingClassesColumns, whereClause,
+                whereArgs,null,null,null,null);
+        List<TrainingClass> trainingClassList = new ArrayList<>();
+        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()){
+            trainingClassList.add(cursorToTrainingClass(cursor));
+        }
+        cursor.close();
+        return trainingClassList;
+    }
+
     public List<TrainingClass> getTrainingClasss(){
         SQLiteDatabase db = getWritableDatabase();
         Cursor cursor = db.query(TABLE_TRAINING_CLASSES,trainingClassesColumns,null,null,
@@ -1700,6 +1801,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         trainingTrainee.setCohort(cursor.getInt(cursor.getColumnIndex(COHORT)));
         trainingTrainee.setChpCode(cursor.getString(cursor.getColumnIndex(CHP_CODE)));
         trainingTrainee.setArchived(cursor.getInt(cursor.getColumnIndex(ARCHIVED))==1);
+        trainingTrainee.setTraineeStatus(cursor.getInt(cursor.getColumnIndex(TRAINEE_STATUS)));
         try{
             trainingTrainee.setRegistration(new JSONObject(cursor.getString(cursor.getColumnIndex(REGISTRATION))));
         }catch (Exception e){}
@@ -1725,13 +1827,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         cv.put(ARCHIVED, trainingTrainee.isArchived());
         cv.put(REGISTRATION, trainingTrainee.getRegistration().toString());
         cv.put(COMMENT, trainingTrainee.getComment());
+        cv.put(TRAINEE_STATUS, trainingTrainee.getTraineeStatus());
         long id;
         if(trainingTraineeExists(trainingTrainee)){
             id = db.update(TABLE_TRAINING_TRAINEES, cv, ID+"='"+trainingTrainee.getId()+"'",
                     null);
+            Log.d("Tremap", "Updated Trainee "+trainingTrainee.getId());
         }else{
             id = db.insertWithOnConflict(TABLE_TRAINING_TRAINEES, null, cv,
                     SQLiteDatabase.CONFLICT_REPLACE);
+            Log.d("Tremap", "Created Trainee "+trainingTrainee.getId());
         }
         db.close();
         return id;
@@ -1763,6 +1868,23 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             cursor.close();
             return trainingTrainee;
         }
+    }
+
+    public List<TrainingTrainee> getTrainingTraineesByClassId(String classId){
+        SQLiteDatabase db = getWritableDatabase();
+        String whereClause = CLASS_ID +" = ?";
+        String[] whereArgs = new String[] {
+                classId,
+        };
+        Cursor cursor=db.query(TABLE_TRAINING_TRAINEES, trainingTraineeColumns, whereClause,
+                whereArgs,null,null,null,null);
+        List<TrainingTrainee> trainingTraineeList = new ArrayList<>();
+        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()){
+            TrainingTrainee trainingTrainee = cursorToTrainingTrainee(cursor);
+            trainingTraineeList.add(trainingTrainee);
+        }
+        cursor.close();
+        return trainingTraineeList;
     }
 
     public List<TrainingTrainee> getTrainingTraineesByTrainingId(String trainingId){
@@ -1838,11 +1960,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             if (!jsonObject.isNull(COMMENT)){
                 trainingTrainee.setComment(jsonObject.getString(COMMENT));
             }
+
+            if (!jsonObject.isNull(TRAINEE_STATUS)){
+                trainingTrainee.setTraineeStatus(jsonObject.getInt(TRAINEE_STATUS));
+            }
             this.addTrainingTrainee(trainingTrainee);
         }catch (Exception e){
             Log.d("Tremap", "=======ERR Creating Training============");
             Log.d("Tremap", e.getMessage());
-            Log.d("Tremap", "===================");
         }
     }
 
@@ -2223,5 +2348,125 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             } catch (JSONException e) {}
         }
         return results;
+    }
+
+
+    /**
+     * *********************************************************************************************
+     *                                                                                             *
+     * Trainee Status                                                                              *
+     * Helps to indicate the status of the trainee                                                 *
+     *                                                                                             *
+     * *********************************************************************************************
+     */
+
+    private TraineeStatus cursorToTraineeStatus(Cursor cursor){
+        TraineeStatus status = new TraineeStatus();
+        status.setId(cursor.getInt(cursor.getColumnIndex(ID)));
+        status.setArchived(cursor.getInt(cursor.getColumnIndex(ARCHIVED))==1);
+        status.setReadonly(cursor.getInt(cursor.getColumnIndex(READONLY))==1);
+        status.setName(cursor.getString(cursor.getColumnIndex(NAME)));
+        status.setCountry(cursor.getString(cursor.getColumnIndex(COUNTRY)));
+        status.setDateCreated(cursor.getString(cursor.getColumnIndex(DATE_CREATED)));
+        status.setClientTime(cursor.getLong(cursor.getColumnIndex(CLIENT_TIME)));
+        status.setCreatedBy(cursor.getInt(cursor.getColumnIndex(CREATED_BY)));
+        return status;
+    }
+
+    public long addTraineeStatus(TraineeStatus status){
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put(ID, status.getId());
+        cv.put(ARCHIVED, status.isArchived());
+        cv.put(READONLY, status.isReadonly());
+        cv.put(NAME, status.getName());
+        cv.put(COUNTRY, status.getCountry());
+        cv.put(DATE_CREATED, status.getDateCreated());
+        cv.put(CLIENT_TIME, status.getClientTime());
+        cv.put(CREATED_BY, status.getCreatedBy());
+        long id;
+        if(traineeStatusExists(status)){
+            id = db.update(TABLE_TRAINEE_STATUS, cv, ID+"='"+status.getId()+"'",
+                    null);
+        }else{
+            id = db.insertWithOnConflict(TABLE_TRAINEE_STATUS, null, cv,
+                    SQLiteDatabase.CONFLICT_REPLACE);
+        }
+        db.close();
+        return id;
+    }
+    public boolean traineeStatusExists(TraineeStatus status) {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cur = db.rawQuery("SELECT "+ID+" FROM " + TABLE_TRAINEE_STATUS + " WHERE "+
+                ID+" = '" + status.getId() + "'", null);
+        boolean exist = (cur.getCount() > 0);
+        cur.close();
+        return exist;
+
+    }
+
+    public TraineeStatus getTraineeStatusById(String traineeStatusId){
+        SQLiteDatabase db = getWritableDatabase();
+        String whereClause = ID +" = ?";
+        String[] whereArgs = new String[] {
+                traineeStatusId,
+        };
+        Cursor cursor=db.query(TABLE_TRAINEE_STATUS, traineeStatusColumns, whereClause,
+                whereArgs,null,null,null,null);
+        if (!(cursor.moveToFirst()) || cursor.getCount() ==0){
+            return null;
+        }else{
+
+            TraineeStatus status = cursorToTraineeStatus(cursor);
+            cursor.close();
+            return status;
+        }
+    }
+
+    public List<TraineeStatus> getTraineeStatuses(){
+        SQLiteDatabase db = getWritableDatabase();
+        Cursor cursor = db.query(TABLE_TRAINEE_STATUS, traineeStatusColumns,null,null,
+                null,null,null,null);
+        List<TraineeStatus> traineeStatusList = new ArrayList<>();
+        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()){
+            TraineeStatus status = cursorToTraineeStatus(cursor);
+            traineeStatusList.add(status);
+        }
+        cursor.close();
+        return traineeStatusList;
+    }
+
+    public void traineeStatusFromJson(JSONObject jsonObject){
+        TraineeStatus traineeStatus = new TraineeStatus();
+        try {
+            traineeStatus.setId(jsonObject.getInt(ID));
+            if (!jsonObject.isNull(NAME)){
+                traineeStatus.setName(jsonObject.getString(NAME));
+            }
+            if (!jsonObject.isNull(ARCHIVED)){
+                traineeStatus.setArchived(jsonObject.getBoolean(ARCHIVED));
+            }
+            if (!jsonObject.isNull(READONLY)){
+                traineeStatus.setReadonly(jsonObject.getBoolean(READONLY));
+            }
+            if (!jsonObject.isNull(COUNTRY)){
+                traineeStatus.setCountry(jsonObject.getString(COUNTRY));
+            }
+            if (!jsonObject.isNull(CLIENT_TIME)){
+                traineeStatus.setClientTime(jsonObject.getLong(CLIENT_TIME));
+            }
+            if (!jsonObject.isNull(CREATED_BY)){
+                traineeStatus.setCreatedBy(jsonObject.getInt(CREATED_BY));
+            }
+            if (!jsonObject.isNull(DATE_CREATED)){
+                traineeStatus.setDateCreated(jsonObject.getString(DATE_CREATED));
+            }
+
+            this.addTraineeStatus(traineeStatus);
+        }catch (Exception e){
+            Log.d("Tremap", "=======ERR Creating Trainee Status ============");
+            Log.d("Tremap", e.getMessage());
+            Log.d("Tremap", "===================");
+        }
     }
 }

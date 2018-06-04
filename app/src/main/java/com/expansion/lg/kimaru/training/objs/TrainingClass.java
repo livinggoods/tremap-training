@@ -10,7 +10,7 @@ public class TrainingClass {
     String trainingId, className, country, dateCreated, comment;
     Long clientTime;
     boolean archived;
-
+    int color = -1;
     public TrainingClass() {
     }
 
@@ -98,5 +98,13 @@ public class TrainingClass {
 
     public void setArchived(boolean archived) {
         this.archived = archived;
+    }
+
+    public int getColor() {
+        return color;
+    }
+
+    public void setColor(int color) {
+        this.color = color;
     }
 }

@@ -13,6 +13,8 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.view.ActionMode;
@@ -30,9 +32,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.expansion.lg.kimaru.training.R;
+import com.expansion.lg.kimaru.training.activity.MainActivity;
 import com.expansion.lg.kimaru.training.adapters.TraineeListAdapter;
 import com.expansion.lg.kimaru.training.database.DatabaseHelper;
 import com.expansion.lg.kimaru.training.objs.Training;
+import com.expansion.lg.kimaru.training.objs.TrainingClass;
 import com.expansion.lg.kimaru.training.objs.TrainingTrainee;
 import com.expansion.lg.kimaru.training.receivers.ConnectivityReceiver;
 import com.expansion.lg.kimaru.training.swipehelpers.TraineeRecyclerItemTouchHelper;
@@ -57,6 +61,7 @@ public class TrainingsTraineesFragment extends Fragment implements TraineeRecycl
 
     SessionManagement sessionManagement;
     Training training = null;
+    TrainingClass trainingClass = null;
 
     public TrainingsTraineesFragment() {}
 
@@ -70,6 +75,17 @@ public class TrainingsTraineesFragment extends Fragment implements TraineeRecycl
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         setHasOptionsMenu(true);
+        if (training!=null) {
+            TrainingViewFragment backFragment = new TrainingViewFragment();
+            backFragment.training = training;
+            MainActivity.backFragment = backFragment;
+        }
+        if (trainingClass != null){
+            TrainingClassesFragment backFragment = new TrainingClassesFragment();
+            backFragment.training = new DatabaseHelper(getContext()).getTrainingById(trainingClass.getTrainingId());
+            MainActivity.backFragment = backFragment;
+        }
+
         View v;
         v =  inflater.inflate(R.layout.fragment_recycler, container, false);
         textshow = (TextView) v.findViewById(R.id.textShow);
@@ -106,16 +122,27 @@ public class TrainingsTraineesFragment extends Fragment implements TraineeRecycl
             @Override
             public void onIconClicked(int position) {
                 TrainingTrainee trainee = trainees.get(position);
+                onMessageRowClicked(position);
             }
 
             @Override
             public void onIconImportantClicked(int position) {
-                TrainingTrainee trainee = trainees.get(position);
+                onMessageRowClicked(position);
             }
 
             @Override
             public void onMessageRowClicked(int position) {
                 TrainingTrainee trainee = trainees.get(position);
+                // Show Trainee Profile
+                TraineeDetailsFragment traineeDetailsFragment = new TraineeDetailsFragment();
+                traineeDetailsFragment.trainingTrainee = trainee;
+                Fragment fragment = traineeDetailsFragment;
+                FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                fragmentTransaction.setCustomAnimations(android.R.anim.slide_in_left, android.R.anim.slide_out_right);
+                fragmentTransaction.replace(R.id.frame, fragment);
+                fragmentTransaction.commitAllowingStateLoss();
+
             }
 
             @Override
@@ -259,17 +286,22 @@ public class TrainingsTraineesFragment extends Fragment implements TraineeRecycl
 
             DatabaseHelper databaseHelper = new DatabaseHelper(getContext());
             List<TrainingTrainee> traineeList = new ArrayList<>();
-
-            traineeList = databaseHelper.getTrainingTraineesByTrainingId(training.getId());
+            if (training != null){
+                traineeList = databaseHelper.getTrainingTraineesByTrainingId(training.getId());
+            }
+            if (trainingClass != null){
+                traineeList = databaseHelper.getTrainingTraineesByClassId(String.valueOf(trainingClass.getId()));
+            }
             for (TrainingTrainee trainee:traineeList){
                 trainee.setColor(getRandomMaterialColor("400"));
                 trainees.add(trainee);
             }
             rAdapter.notifyDataSetChanged();
             swipeRefreshLayout.setRefreshing(false);
+
         } catch (Exception error){
             Toast.makeText(getContext(), "No Trainings found", Toast.LENGTH_SHORT).show();
-            textshow.setText("Trainings");
+            textshow.setText(error.getMessage());
         }
         swipeRefreshLayout.setRefreshing(false);
     }
@@ -281,7 +313,6 @@ public class TrainingsTraineesFragment extends Fragment implements TraineeRecycl
         if (training != null){
             ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle(training.getTrainingName() + " Trainees");
         }
-        setHasOptionsMenu(false);
     }
 
     private boolean isConnected(){

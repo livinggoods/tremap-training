@@ -33,6 +33,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.expansion.lg.kimaru.training.R;
+import com.expansion.lg.kimaru.training.activity.MainActivity;
 import com.expansion.lg.kimaru.training.adapters.TrainingSessionListAdapter;
 import com.expansion.lg.kimaru.training.database.DatabaseHelper;
 import com.expansion.lg.kimaru.training.objs.Training;
@@ -73,6 +74,11 @@ public class TrainingsSessionsFragment extends Fragment implements TrainingSessi
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         setHasOptionsMenu(true);
+
+        TrainingViewFragment backFragment = new TrainingViewFragment();
+        backFragment.training = training;
+        MainActivity.backFragment = backFragment;
+
         View v;
         v =  inflater.inflate(R.layout.fragment_recycler, container, false);
         textshow = (TextView) v.findViewById(R.id.textShow);

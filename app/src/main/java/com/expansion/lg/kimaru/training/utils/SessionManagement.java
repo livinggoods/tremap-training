@@ -17,17 +17,19 @@ public class SessionManagement {
     private Context context;
     private int PRIVATE_MODE = 0;
 
-    private static final String PREF_NAME= "tremap";
+    private static final String PREF_NAME= "tremap_training";
 
     private static final String CLOUD_URL = "cloud_url";
     private static final String API_PREFIX = "api_prefix";
     private static final String API_VERSION = "api_version";
     private static final String API_SUFFIX = "api_suffix";
+    private static final String TRAINEE_STATUS_ENDPOINT = "trainee_status";
 
     private static final String TRAINING_ENDPOINT = "training_endpoint";
     private static final String TRAINING_DETAILS_ENDPOINT = "training_details_endpoint";
     private static final String TRAINING_DETAILS_JSON_ROOT = "training_details_json_root";
     private static final String TRAINING_JSON_ROOT = "training_json_root";
+    private static final String TRAINEE_STATUS_JSON_ROOT = "trainee_status_json_root";
     private static final String USERS_ENDPOINT = "users_endpoint";
     private static final String TRAINING_TRAINEE_ENDPOINT = "training_trainee_endpoint";
     private static final String SESSION_TOPIC_ENDPOINT = "session_topic_endpoint";
@@ -146,6 +148,15 @@ public class SessionManagement {
     }
 
 
+    //traineeStatusJsonRoot Endpoint
+    public void saveTraineeStatusJsonRoot(String traineeStatusJsonRoot){
+        editor.putString(TRAINEE_STATUS_JSON_ROOT, traineeStatusJsonRoot);
+        editor.commit();
+    }
+    public String getTraineeStatusJSONRoot (){
+        return pref.getString(TRAINEE_STATUS_JSON_ROOT, "training_status");
+    }
+
     //trainingDetailsJsonRoot Endpoint
     public void saveTrainingDetailsJsonRoot(String trainingDetailsJsonRoot){
         editor.putString(TRAINING_DETAILS_JSON_ROOT, trainingDetailsJsonRoot);
@@ -185,6 +196,15 @@ public class SessionManagement {
     public String getTrainingTraineesEndpoint (){
         String trainingTraineesEndpoint = pref.getString(TRAINING_TRAINEE_ENDPOINT, "sync/trainees");
         return trainingTraineesEndpoint;
+    }
+
+    //TraineeStatus Endpoint
+    public void saveTraineeStatusEndpoint(String traineeStatusEndpoint){
+        editor.putString(TRAINEE_STATUS_ENDPOINT, traineeStatusEndpoint);
+        editor.commit();
+    }
+    public String getTraineeStatusEndpoint (){
+        return pref.getString(TRAINEE_STATUS_ENDPOINT, "sync/trainee-status");
     }
 
 

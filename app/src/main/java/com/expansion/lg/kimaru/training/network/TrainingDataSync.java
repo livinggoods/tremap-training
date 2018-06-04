@@ -293,4 +293,40 @@ public class TrainingDataSync {
         @Override
         protected void onPostExecute(String result){}
     }
+
+
+    public void getTraineeStatusFromCloud(){
+        new getTraineeStatusFromUpstream().execute();
+    }
+
+    private class getTraineeStatusFromUpstream extends AsyncTask<Void, Void, Void>{
+        @Override
+        protected void onPreExecute(){super.onPreExecute();}
+
+        @Override
+        protected Void doInBackground(Void... voids){
+            JsonParser jsonParser = new JsonParser();
+            DatabaseHelper databaseHelper = new DatabaseHelper(context);
+            SessionManagement session =  new SessionManagement(context);
+            String url = session.getApiUrl()+session.getTraineeStatusEndpoint();
+            Log.d("Tremap", "____________________---URL-------------____________");
+            Log.d("Tremap", url);
+            Log.d("Tremap", "____________________----------------____________");
+
+            String json = jsonParser.getJSONFromUrl(url);
+            if (json != null){
+                try{
+                    JSONArray statuses = new JSONObject(json).getJSONArray(session.getTraineeStatusJSONRoot());
+                    for (int x=0; x < statuses.length(); x++){
+                        databaseHelper.traineeStatusFromJson(statuses.getJSONObject(x));
+                    }
+                }catch (Exception e){
+                    Log.d("Tremap", "____________________----------------____________");
+                    Log.d("Tremap", e.getMessage());
+                    Log.d("Tremap", "____________________----------------____________");
+                }
+            }
+            return null;
+        }
+    }
 }

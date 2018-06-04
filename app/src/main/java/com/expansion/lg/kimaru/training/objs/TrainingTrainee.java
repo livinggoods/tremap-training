@@ -8,7 +8,7 @@ import org.json.JSONObject;
 
 public class TrainingTrainee {
     String id, registrationId, dateCreated, trainingId, country, chpCode, comment, branch;
-    Integer classId, addedBy, cohort;
+    Integer classId, addedBy, cohort, traineeStatus;
     Long clientTime;
     boolean archived;
     JSONObject registration;
@@ -20,7 +20,7 @@ public class TrainingTrainee {
     public TrainingTrainee(String id, String registrationId, String dateCreated,
                            String trainingId, String country, String chpCode, String comment,
                            Integer classId, Integer addedBy, String branch, Integer cohort,
-                           Long clientTime, boolean archived, JSONObject registration) {
+                           Long clientTime, boolean archived, JSONObject registration, int traineeStatus) {
         this.id = id;
         this.registrationId = registrationId;
         this.dateCreated = dateCreated;
@@ -35,6 +35,7 @@ public class TrainingTrainee {
         this.clientTime = clientTime;
         this.archived = archived;
         this.registration = registration;
+        this.traineeStatus = traineeStatus;
     }
 
     public String getId() {
@@ -155,5 +156,14 @@ public class TrainingTrainee {
 
     public void setColor(int color) {
         this.color = color;
+    }
+
+
+    public Integer getTraineeStatus() {
+        return traineeStatus;
+    }
+
+    public void setTraineeStatus(Integer traineeStatus) {
+        this.traineeStatus = traineeStatus;
     }
 }

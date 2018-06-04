@@ -28,4 +28,17 @@
 
     <string name="trainees_title">Trainees</string>
     <string name="sessions_title">Sessions</string>
+    <string name="action_more">Details</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <!-- Dashboard Icons -->
+    <string name="trainings">Trainings</string>
+    <string name="exams">Exams</string>
+    <string name="graduations">Graduations</string>
+    <string name="settings">Settings</string>
+    <string name="certifications">Certifications</string>
+    <string name="cloud">Cloud</string>
+
 </resources>

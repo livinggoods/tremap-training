@@ -26,6 +26,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 
 import com.expansion.lg.kimaru.training.R;
+import com.expansion.lg.kimaru.training.activity.MainActivity;
 import com.expansion.lg.kimaru.training.adapters.SessionAttendanceListAdapter;
 import com.expansion.lg.kimaru.training.database.DatabaseHelper;
 import com.expansion.lg.kimaru.training.network.TrainingDataSync;
@@ -68,6 +69,11 @@ public class SessionAttendanceFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         setHasOptionsMenu(true);
+
+        TrainingsSessionsFragment backFragment = new TrainingsSessionsFragment();
+        backFragment.training = new DatabaseHelper(getContext()).getTrainingById(session.getTrainingId());
+        MainActivity.backFragment = backFragment;
+
         View v;
         v =  inflater.inflate(R.layout.fragment_attendance, container, false);
         recyclerView = v.findViewById(R.id.list);
@@ -97,13 +103,10 @@ public class SessionAttendanceFragment extends Fragment {
             }
         });
 
-        btnGetSelected.setVisibility(View.VISIBLE);
+        btnGetSelected.setVisibility(View.GONE);
         btnGetSelected.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.d("Tremap","))))))))))))))))))))))))");
-                Log.d("Tremap","CLICKED");
-                Log.d("Tremap","((((((((((((((((((((((((");
             }
         });
         return v;
@@ -231,7 +234,10 @@ public class SessionAttendanceFragment extends Fragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle("Trainings");
+        if (session!=null){
+            String topic = new DatabaseHelper(getContext()).getSessionTopicById(session.getSessionTopicId().toString()).getName();
+            ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle("Attendance for "+ topic);
+        }
         setHasOptionsMenu(false);
     }
 

@@ -1,0 +1,44 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.expansion.lg.kimaru.training.fragments.HomeFragment">
+
+    <com.gadiness.kimarudg.DashboardLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" >
+
+        <Button android:id="@+id/dashboard_training"
+            style="@style/DashboardButton"
+            android:text="@string/trainings"
+            android:drawableTop="@drawable/ic_training" />
+
+        <Button android:id="@+id/dashboard_exams"
+            style="@style/DashboardButton"
+            android:text="@string/exams"
+            android:drawableTop="@drawable/ic_exam_black_24dp" />
+
+        <Button android:id="@+id/dashboard_graduations"
+            style="@style/DashboardButton"
+            android:text="@string/graduations"
+            android:drawableTop="@drawable/ic_graduation" />
+
+        <Button android:id="@+id/dashboard_certifications"
+            style="@style/DashboardButton"
+            android:text="@string/certifications"
+            android:drawableTop="@drawable/ic_certificate" />
+
+        <Button android:id="@+id/dashboard_settings"
+            style="@style/DashboardButton"
+            android:text="@string/settings"
+            android:drawableTop="@drawable/ic_settings_black_24dp" />
+
+        <Button android:id="@+id/dashboard_cloud"
+            style="@style/DashboardButton"
+            android:text="@string/cloud"
+            android:drawableTop="@drawable/ic_cloud" />
+
+    </com.gadiness.kimarudg.DashboardLayout>
+
+</FrameLayout>

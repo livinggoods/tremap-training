@@ -23,10 +23,12 @@ import com.expansion.lg.kimaru.training.utils.SessionManagement;
 public class SettingsFragment extends Fragment {
     SessionManagement sessionManagement;
     TextView cloudUrl, apiPrefix, apiVersion, apiSuffix, trainingEndpoint, trainingDetailsEndpoint,
-            trainingDetailsJSONRoot, trainingJsonRoot, usersEndpoint, sessionTopicsEndpoint, sessionTopicsJsonRoot;
+            trainingDetailsJSONRoot, trainingJsonRoot, usersEndpoint, sessionTopicsEndpoint,
+            sessionTopicsJsonRoot, traineeStatusJsonRoot, traineeStatusApi;
     RelativeLayout appCloudUrlView, appApiPrefixView,appApiRelative, appiSuffixRelative, appTrainingRelative,
             trainingDetailsEndpointRelative, trainingDetailsJSONRootView, trainingJsonRootView,
-            usersEndpointView, sessionTopicsJsonView,sessionTopicsView;
+            usersEndpointView, sessionTopicsJsonView,sessionTopicsView, traineeStatusApiView,
+            traineeStatusJsonView;
 
     public SettingsFragment(){}
 
@@ -59,6 +61,9 @@ public class SettingsFragment extends Fragment {
         sessionTopicsEndpoint = (TextView) view.findViewById(R.id.sessionTopicsEndpoint);
         sessionTopicsJsonRoot = (TextView) view.findViewById(R.id.sessionTopicsJsonEndpoint);
 
+        traineeStatusJsonRoot = (TextView) view.findViewById(R.id.traineeStatusJsonRoot);
+        traineeStatusApi = (TextView) view.findViewById(R.id.traineeStatusApi);
+
         // Relative Views to Allow Clicking
         appCloudUrlView = (RelativeLayout) view.findViewById(R.id.appCloudUrlView);
         appApiPrefixView = (RelativeLayout) view.findViewById(R.id.appApiPrefixView);
@@ -71,6 +76,8 @@ public class SettingsFragment extends Fragment {
         usersEndpointView = (RelativeLayout) view.findViewById(R.id.usersEndpointView);
         sessionTopicsJsonView = (RelativeLayout) view.findViewById(R.id.usersSessionTopicsJsonView);
         sessionTopicsView = (RelativeLayout) view.findViewById(R.id.usersSessionTopicsView);
+        traineeStatusApiView = (RelativeLayout) view.findViewById(R.id.traineeSessionApiView);
+        traineeStatusJsonView = (RelativeLayout) view.findViewById(R.id.traineeSessionJsonView);
 
 
 
@@ -431,6 +438,72 @@ public class SettingsFragment extends Fragment {
                         if (!enteredText.trim().equals("")){
                             sessionManagement.saveSessionTopicsJsonRoot(enteredText);
                             sessionTopicsJsonRoot.setText(sessionManagement.getSessionTopicsJsonRoot());
+                        }
+                    }
+                });
+                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+                builder.show();
+            }
+        });
+
+        //Added JSONroot for traineeStatus
+        traineeStatusJsonView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                builder.setTitle("Trainee Status");
+                final EditText userText = new EditText(getContext());
+                userText.setHint("JSON Root");
+                userText.setText(sessionManagement.getTraineeStatusJSONRoot());
+                LinearLayout layout = new LinearLayout(getContext());
+                layout.setOrientation(LinearLayout.VERTICAL);
+                layout.addView(userText);
+                builder.setView(layout);
+                builder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        String enteredText = userText.getText().toString();
+                        if (!enteredText.trim().equals("")){
+                            sessionManagement.saveTraineeStatusJsonRoot(enteredText);
+                            traineeStatusJsonRoot.setText(sessionManagement.getTraineeStatusJSONRoot());
+                        }
+                    }
+                });
+                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+                builder.show();
+            }
+        });
+
+        //Added JSONroot for traineeStatus
+        traineeStatusApiView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                builder.setTitle("Trainee Status");
+                final EditText userText = new EditText(getContext());
+                userText.setHint("Api Endpoint");
+                userText.setText(sessionManagement.getTraineeStatusEndpoint());
+                LinearLayout layout = new LinearLayout(getContext());
+                layout.setOrientation(LinearLayout.VERTICAL);
+                layout.addView(userText);
+                builder.setView(layout);
+                builder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        String enteredText = userText.getText().toString();
+                        if (!enteredText.trim().equals("")){
+                            sessionManagement.saveTraineeStatusEndpoint(enteredText);
+                            traineeStatusApi.setText(sessionManagement.getTraineeStatusEndpoint());
                         }
                     }
                 });
