@@ -38,7 +38,112 @@
     <string name="exams">Exams</string>
     <string name="graduations">Graduations</string>
     <string name="settings">Settings</string>
+    <string name="grp_settings">Settings</string>
+    <string name="grp_communicate">Sharing</string>
     <string name="certifications">Certifications</string>
     <string name="cloud">Cloud</string>
+
+
+    <!-- CONFIG SETTINGS -->
+    <string name="cloud_url">cloud_url</string>
+    <string name="cloud_url_default">cloud_url</string>
+    <string name="cloud_url_summary">Cloud URL</string>
+    <string name="cloud_url_title">Cloud URL</string>
+
+    <string name="api_prefix">api_prefix</string>
+    <string name="api_prefix_default">api_prefix</string>
+    <string name="api_prefix_summary">Api Prefix</string>
+    <string name="api_prefix_title">Api Prefix</string>
+
+    <string name="api_version">api_version</string>
+    <string name="api_version_default">api_version</string>
+    <string name="api_version_summary">Api Version</string>
+    <string name="api_version_title">Api Version</string>
+
+    <string name="api_suffix">api_suffix</string>
+    <string name="api_suffix_default">api_suffix</string>
+    <string name="api_suffix_summary">Api Suffix</string>
+    <string name="api_suffix_title">Api Suffix</string>
+
+    <string name="trainee_status">trainee_status</string>
+    <string name="trainee_status_default">trainee_status</string>
+    <string name="trainee_status_summary">Trainee Status</string>
+    <string name="trainee_status_title">Trainee Status</string>
+
+
+    <string name="training_endpoint">training_endpoint</string>
+    <string name="training_endpoint_default">training_endpoint</string>
+    <string name="training_endpoint_summary">Training Endpoint</string>
+    <string name="training_endpoint_title">Training Endpoint</string>
+
+    <string name="training_details_endpoint">training_details_endpoint</string>
+    <string name="training_details_endpoint_default">training_details_endpoint</string>
+    <string name="training_details_endpoint_summary">Training Details Endpoint</string>
+    <string name="training_details_endpoint_title">Training Details Endpoint</string>
+
+    <string name="training_details_json_root">training_details_json_root</string>
+    <string name="training_details_json_root_default">training_details_json_root</string>
+    <string name="training_details_json_root_summary">Training Details Json Root</string>
+    <string name="training_details_json_root_title">Training Details Json Root</string>
+
+    <string name="training_json_root">training_json_root</string>
+    <string name="training_json_root_default">training_json_root</string>
+    <string name="training_json_root_summary">Training Json Root</string>
+    <string name="training_json_root_title">Training Json Root</string>
+
+    <string name="trainee_status_json_root">trainee_status_json_root</string>
+    <string name="trainee_status_json_root_default">trainee_status_json_root</string>
+    <string name="trainee_status_json_root_summary">Trainee Status Json Root</string>
+    <string name="trainee_status_json_root_title">Trainee Status Json Root</string>
+
+    <string name="users_endpoint">users_endpoint</string>
+    <string name="users_endpoint_default">users_endpoint</string>
+    <string name="users_endpoint_summary">Users Endpoint</string>
+    <string name="users_endpoint_title">Users Endpoint</string>
+
+    <string name="training_trainee_endpoint">training_trainee_endpoint</string>
+    <string name="training_trainee_endpoint_default">training_trainee_endpoint</string>
+    <string name="training_trainee_endpoint_summary">Training Trainee Endpoint</string>
+    <string name="training_trainee_endpoint_title">Training Trainee Endpoint</string>
+
+    <string name="session_topic_endpoint">session_topic_endpoint</string>
+    <string name="session_topic_endpoint_default">session_topic_endpoint</string>
+    <string name="session_topic_endpoint_summary">Session Topic Endpoint</string>
+    <string name="session_topic_endpoint_title">Session Topic Endpoint</string>
+
+    <string name="session_topic_json_root">session_topic_json_root</string>
+    <string name="session_topic_json_root_default">session_topic_json_root</string>
+    <string name="session_topic_json_root_summary">Session Topic Json Root</string>
+    <string name="session_topic_json_root_title">Session Topic Json Root</string>
+
+
+    <string name="session_attendance_endpoint">session_attendance_endpoint</string>
+    <string name="session_attendance_endpoint_default">session_attendance_endpoint</string>
+    <string name="session_attendance_endpoint_summary">Session Attendance Endpoint</string>
+    <string name="session_attendance_endpoint_title">Session Attendance Endpoint</string>
+
+    <string name="session_attendance_json_root">session_attendance_json_root</string>
+    <string name="session_attendance_json_root_default">session_attendance_json_root</string>
+    <string name="session_attendance_json_root_summary">Session Attendance Json Root</string>
+    <string name="session_attendance_json_root_title">Session Attendance Json Root</string>
+
+    <string name="training_exams_endpoint">training_exams_endpoint</string>
+    <string name="training_exams_endpoint_default">training_exams_endpoint</string>
+    <string name="training_exams_endpoint_summary">Training Exams Endpoint</string>
+    <string name="training_exams_endpoint_title">Training Exams Endpoint</string>
+
+    <string name="training_exams_json_root">training_exams_json_root</string>
+    <string name="training_exams_json_root_default">training_exams_json_root</string>
+    <string name="training_exams_json_root_summary">Training Exams Json Root</string>
+    <string name="training_exams_json_root_title">Training Exams Json Root</string>
+
+    <string name="config_dialog_title">Update setting</string>
+
+
+    <string name="IsLoggedIn">IsLoggedIn</string>
+    <string name="name">name</string>
+    <string name="email">email</string>
+    <string name="userid">userid</string>
+    <string name="country">country</string>
 
 </resources>

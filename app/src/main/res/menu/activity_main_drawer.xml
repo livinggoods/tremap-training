@@ -20,7 +20,7 @@
             android:title="@string/certifications" />
     </group>
 
-    <item android:title="Communicate">
+    <item android:title="@string/grp_communicate">
         <menu>
             <item
                 android:id="@+id/nav_share"
@@ -30,6 +30,15 @@
                 android:id="@+id/nav_send"
                 android:icon="@drawable/ic_menu_send"
                 android:title="Upload" />
+        </menu>
+    </item>
+
+    <item android:title="@string/grp_settings">
+        <menu>
+            <item
+                android:id="@+id/nav_settings"
+                android:icon="@drawable/ic_settings_black_24dp"
+                android:title="@string/settings" />
         </menu>
     </item>
 

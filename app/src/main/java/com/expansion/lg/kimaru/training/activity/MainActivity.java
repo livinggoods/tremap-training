@@ -1,6 +1,7 @@
 package com.expansion.lg.kimaru.training.activity;
 
 import android.os.Handler;
+import android.preference.PreferenceFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.content.Intent;
@@ -25,6 +26,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.expansion.lg.kimaru.training.R;
 import com.expansion.lg.kimaru.training.fragments.HomeFragment;
 import com.expansion.lg.kimaru.training.fragments.SettingsFragment;
+import com.expansion.lg.kimaru.training.fragments.SetttingFragment;
 import com.expansion.lg.kimaru.training.fragments.TrainingsFragment;
 import com.expansion.lg.kimaru.training.utils.CircleTransform;
 import com.expansion.lg.kimaru.training.utils.SessionManagement;
@@ -155,11 +157,14 @@ public class MainActivity extends AppCompatActivity
 
         } else if (id == R.id.nav_slideshow) {
 
-        } else if (id == R.id.nav_manage) {
-            fragment = new SettingsFragment();
+        } else if (id == R.id.nav_settings) {
+            SettingsFragment settings = new SettingsFragment();
             fragmentTransaction.setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out);
-            fragmentTransaction.replace(R.id.frame, fragment);
+            fragmentTransaction.replace(R.id.frame, settings);
             fragmentTransaction.commitAllowingStateLoss();
+//            getSupportFragmentManager().beginTransaction()
+//                    .replace(R.id.frame, new SetttingFragment())
+//                    .commit();
 
         } else if (id == R.id.nav_share) {
 

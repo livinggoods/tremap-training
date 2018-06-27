@@ -1,0 +1,27 @@
+<android.support.v7.preference.PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <android.support.v7.preference.PreferenceCategory
+        android:title="Api Endpoints">
+
+        <android.support.v7.preference.SwitchPreferenceCompat
+            android:key="@string/cloud_url"
+            android:title="@string/cloud_url"
+            android:summary="@string/cloud_url"
+            android:defaultValue="true" />
+
+        <android.support.v7.preference.EditTextPreference
+            android:key="@string/api_prefix"
+            android:title="@string/api_prefix_title"
+            android:summary="@string/api_prefix_summary"
+            android:dialogMessage="::KIMARU"
+            android:defaultValue="Default value" />
+
+        <android.support.v7.preference.CheckBoxPreference
+            android:key="key3"
+            android:title="CheckBox Preference"
+            android:summary="CheckBox Summary"
+            android:defaultValue="true"/>
+    </android.support.v7.preference.PreferenceCategory>
+
+</android.support.v7.preference.PreferenceScreen>

@@ -37,6 +37,8 @@ public class SessionManagement {
 
     private static final String SESSION_ATTENDANCE_ENDPOINT = "session_attendance_endpoint";
     private static final String SESSION_ATTENDANCE_JSON_ROOT = "session_attendance_json_root";
+    private static final String TRAINING_EXAMS_ENDPOINT = "training_exams_endpoint";
+    private static final String TRAINING_EXAMS_JSON_ROOT = "training_exams_json_root";
 
     private static final String IS_LOGIN = "IsLoggedIn";
     public static final String KEY_NAME = "name";
@@ -227,6 +229,25 @@ public class SessionManagement {
     public String getSessionAttendanceJSONRoot (){
         String root = pref.getString(SESSION_ATTENDANCE_JSON_ROOT, "attendance");
         return root;
+    }
+
+    //Training Exams JSON Root
+    public void saveTrainingExamsJSONRoot(String trainingExamJSONRoot){
+        editor.putString(TRAINING_EXAMS_JSON_ROOT, trainingExamJSONRoot);
+        editor.commit();
+    }
+    public String getTrainingExamsJSONRoot (){
+        String root = pref.getString(TRAINING_EXAMS_JSON_ROOT, "exams");
+        return root;
+    }
+
+    //Training Exams Endpoint
+    public void saveTrainingExamsEndpoint(String trainingExamEndpoint){
+        editor.putString(TRAINING_EXAMS_ENDPOINT, trainingExamEndpoint);
+        editor.commit();
+    }
+    public String getTrainingExamsEndpoint (){
+        return  pref.getString(TRAINING_EXAMS_ENDPOINT, "training/%s/exams");
     }
 
     public HashMap<String, String> getUserDetails (){

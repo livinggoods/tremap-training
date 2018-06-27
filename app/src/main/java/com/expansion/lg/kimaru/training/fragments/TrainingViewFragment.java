@@ -63,7 +63,7 @@ public class TrainingViewFragment extends Fragment implements  View.OnClickListe
 
     TextView trainingName, trainingTrainees, trainingClasses, trainingSessions, trainingAttendance,
             trainingLeadTrainer;
-    LinearLayout traineesButton, sessionsButton, classesButton;
+    LinearLayout traineesButton, sessionsButton, classesButton, trainingExamsView;
     ImageView trainingImage;
 
 
@@ -78,12 +78,18 @@ public class TrainingViewFragment extends Fragment implements  View.OnClickListe
         trainingAttendance = v.findViewById(R.id.trainingAttendance);
         trainingLeadTrainer = v.findViewById(R.id.trainingLeadTrainer);
         trainingImage = v.findViewById(R.id.trainingImage);
+        trainingExamsView = v.findViewById(R.id.trainingExamsView);
+
+        Log.d("TREMAP", "{}{}{}{}{}{}{}{}{");
+        Log.d("TREMAP", DatabaseHelper.CREATE_TABLE_TRAINING_EXAM);
+        Log.d("TREMAP", "{}{}{}{}{}{}{}{}{");
 
 
         traineesButton = v.findViewById(R.id.traineesButton);
         sessionsButton = v.findViewById(R.id.sessionsButton);
         classesButton = v.findViewById(R.id.classesButton);
         getTrainingDetailsFromApi();
+        getTrainingExamsFromApi();
 
         DatabaseHelper db = new DatabaseHelper(getContext());
         trainingName.setText(training.getTrainingName());
@@ -107,6 +113,23 @@ public class TrainingViewFragment extends Fragment implements  View.OnClickListe
                 TrainingsTraineesFragment trainingsTraineesFragment = new TrainingsTraineesFragment();
                 trainingsTraineesFragment.training = training;
                 fragment = trainingsTraineesFragment;
+                fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
+                fragmentTransaction.setCustomAnimations(android.R.anim.fade_in,
+                        android.R.anim.fade_out);
+                fragmentTransaction.replace(R.id.frame, fragment);
+                fragmentTransaction.commitAllowingStateLoss();
+            }
+
+        });
+
+        trainingExamsView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Fragment fragment;
+                FragmentTransaction fragmentTransaction;
+                TrainingsExamsFragment trainingExamsFragment = new TrainingsExamsFragment();
+                trainingExamsFragment.training = training;
+                fragment = trainingExamsFragment;
                 fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
                 fragmentTransaction.setCustomAnimations(android.R.anim.fade_in,
                         android.R.anim.fade_out);
@@ -180,21 +203,18 @@ public class TrainingViewFragment extends Fragment implements  View.OnClickListe
     }
     @ColorInt
     private int getRatingColor(double averageVote) {
-//        if (averageVote >= VOTE_PERFECT) {
-//            return ContextCompat.getColor(getContext(), R.color.vote_perfect);
-//        } else if (averageVote >= VOTE_GOOD) {
-//            return ContextCompat.getColor(getContext(), R.color.vote_good);
-//        } else if (averageVote >= VOTE_NORMAL) {
-//            return ContextCompat.getColor(getContext(), R.color.vote_normal);
-//        } else {
-//            return ContextCompat.getColor(getContext(), R.color.vote_bad);
-//        }
         return ContextCompat.getColor(getContext(), R.color.vote_perfect);
     }
 
     private void getTrainingDetailsFromApi(){
         try{
             new TrainingDataSync(getContext()).getTrainingDetailsJson(training.getId());
+        }catch (Exception e){}
+    }
+
+    private void getTrainingExamsFromApi(){
+        try{
+            new TrainingDataSync(getContext()).getTrainingExams(training.getId());
         }catch (Exception e){}
     }
 

@@ -200,6 +200,30 @@
                     android:paddingLeft="20dp"
                     android:text="Not set"/>
             </LinearLayout>
+
+            <LinearLayout
+                android:layout_marginTop="25dp"
+                android:orientation="horizontal"
+                android:paddingLeft="25dp"
+                android:id="@+id/trainingExamsView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:textStyle="bold"
+                    android:textAlignment="center"
+                    android:layout_gravity="center_vertical"
+                    android:layout_width="@dimen/training_p_width"
+                    android:layout_height="@dimen/training_p_height"
+                    android:text="Training Exams"/>
+                <TextView
+                    android:textStyle="bold"
+                    android:id="@+id/trainingExams"
+                    android:layout_gravity="center_vertical"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="20dp"
+                    android:text="Not set"/>
+            </LinearLayout>
             <!--<LinearLayout
                 android:layout_marginTop="25dp"
                 android:orientation="horizontal"

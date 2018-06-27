@@ -329,4 +329,40 @@ public class TrainingDataSync {
             return null;
         }
     }
+
+
+    public void getTrainingExams(String trainingId){
+        new getTrainingExamsFromUpstream().execute(trainingId);
+    }
+
+    private class getTrainingExamsFromUpstream extends AsyncTask<String, Void, String>{
+        @Override
+        protected void onPreExecute(){super.onPreExecute();}
+
+        @Override
+        protected String doInBackground(String... strings){
+            JsonParser jsonParser = new JsonParser();
+            String trainingId = strings[0];
+            DatabaseHelper databaseHelper = new DatabaseHelper(context);
+            SessionManagement session =  new SessionManagement(context);
+            String url = session.getApiUrl()+ String.format(session.getTrainingExamsEndpoint(), trainingId);
+            Log.d("TREMAP", url);
+            Log.d("TREMAP", url);
+            Log.d("TREMAP", url);
+
+            String json = jsonParser.getJSONFromUrl(url);
+            if (json != null){
+                try{
+                    JSONArray exams = new JSONObject(json).getJSONArray(session.getTrainingExamsJSONRoot());
+                    for (int x=0; x < exams.length(); x++){
+                        databaseHelper.trainingExamFromJson(exams.getJSONObject(x));
+                    }
+                }catch (Exception e){
+                    Log.d("TREMAPEXAMS", "ERROR TRAINING EXAMS");
+                    Log.d("Tremap", e.getMessage());
+                }
+            }
+            return null;
+        }
+    }
 }

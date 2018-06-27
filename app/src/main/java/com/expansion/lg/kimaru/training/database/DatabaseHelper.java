@@ -16,6 +16,7 @@ import com.expansion.lg.kimaru.training.objs.TraineeStatus;
 import com.expansion.lg.kimaru.training.objs.Training;
 import com.expansion.lg.kimaru.training.objs.TrainingClass;
 import com.expansion.lg.kimaru.training.objs.TrainingComment;
+import com.expansion.lg.kimaru.training.objs.TrainingExam;
 import com.expansion.lg.kimaru.training.objs.TrainingRole;
 import com.expansion.lg.kimaru.training.objs.TrainingSession;
 import com.expansion.lg.kimaru.training.objs.TrainingSessionType;
@@ -67,6 +68,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String TABLE_BRANCH = "branch";
     private static final String TABLE_COHORT = "cohort";
     private static final String TABLE_TRAINEE_STATUS = "trainee_status";
+    private static final String TABLE_TRAINING_EXAM = "training_exams";
 
     // fields for Training
     private static final String ID = "id";
@@ -96,7 +98,54 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COHORT_NAME = "cohort_name";
     private static final String TRAINEE_STATUS = "trainee_status";
     private static final String BRANCH_ID = "branch_id";
-    public static final String CREATE_TABLE_TRAINING ="CREATE TABLE " + TABLE_TRAINING + "("
+    private static final String DATE_ADMINISTERED = "date_administered";
+    private static final String EXAM_ID = "exam_id";
+    private static final String TITLE = "title";
+    // training venue
+    private static final String NAME = "name";
+    private static final String MAPPING = "mapping";
+    private static final String MAPPING_ID = "mapping_id";
+    private static final String INSPECTED = "inspected";
+    private static final String SELECTED = "selected";
+    private static final String CAPACITY = "capacity";
+    private static final String DATE_ADDED = "date_added";
+    private static final String ADDED_BY = "added_by";
+    private static final String META_DATA = "meta_data";
+    //sessionAttendance
+    private static final String TRAINING_SESSION_ID = "training_session_id";
+    private static final String TRAINEE_ID = "trainee_id";
+    private static final String TRAINING_SESSION_TYPE_ID = "training_session_type_id";
+    private static final String TRAINING_ID = "training_id";
+    private static final String ATTENDED = "attended";
+    //training session
+    private static final String CLASS_ID = "class_id";
+    private static final String TRAINER_ID = "trainer_id";
+    private static final String SESSION_START_TIME = "session_start_time";
+    private static final String SESSION_END_TIME = "session_end_time";
+    private static final String SESSION_TOPIC_ID = "session_topic_id";
+    private static final String SESSION_LEAD_TRAINER = "session_lead_trainer";
+    //training_session_type
+    private static final String SESSION_NAME = "session_name";
+    private static final String READONLY = "readonly";
+    private static final String ROLE_NAME = "role_name";
+    private static final String TRAINING_ROLE_ID = "training_role_id";
+    private static final String REGISTRATION_ID = "registration_id";
+    private static final String BRANCH = "branch";
+    private static final String COHORT = "cohort";
+    private static final String CHP_CODE = "chp_code";
+    private static final String REGISTRATION = "registration";
+    private static final String CLASS_NAME = "class_name";
+    private static final String EMAIL= "email";
+    private static final String USERNAME = "username";
+    private static final String PASSWORD = "password";
+    private static final String PASSMARK = "passmark";
+    private static final String EXAM_STATUS = "exam_status";
+    private static final String EXAM_STATUS_ID = "exam_status_id";
+    private static final String QUESTIONS = "questions";
+    private static final String CLOUD_EXAM = "cloud_exam";
+
+
+    private static final String CREATE_TABLE_TRAINING ="CREATE TABLE " + TABLE_TRAINING + "("
             + ID + varchar_field +", "
             + TRAINING_NAME + varchar_field + ", "
             + COUNTRY + varchar_field + ", "
@@ -119,18 +168,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             + DATE_COMMENCED + real_field + ", "
             + DATE_COMPLETED + real_field + "); ";
 
-    // training venue
-    private static final String NAME = "name";
-    private static final String MAPPING = "mapping";
-    private static final String MAPPING_ID = "mapping_id";
-    private static final String INSPECTED = "inspected";
-    private static final String SELECTED = "selected";
-    private static final String CAPACITY = "capacity";
-    private static final String DATE_ADDED = "date_added";
-    private static final String ADDED_BY = "added_by";
-    private static final String META_DATA = "meta_data";
-
-    public static final String CREATE_TABLE_TRAINING_VENUE ="CREATE TABLE " + TABLE_TRAINING_VENUE + "("
+    private static final String CREATE_TABLE_TRAINING_VENUE ="CREATE TABLE " + TABLE_TRAINING_VENUE + "("
             + ID + varchar_field +", "
             + NAME + varchar_field + ", "
             + MAPPING + varchar_field + ", "
@@ -145,14 +183,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             + CLIENT_TIME + real_field + ", "
             + META_DATA + text_field + ", "
             + ARCHIVED + integer_field + "); ";
-    //sessionAttendance
-    private static final String TRAINING_SESSION_ID = "training_session_id";
-    private static final String TRAINEE_ID = "trainee_id";
-    private static final String TRAINING_SESSION_TYPE_ID = "training_session_type_id";
-    private static final String TRAINING_ID = "training_id";
-    private static final String ATTENDED = "attended";
 
-    public static final String CREATE_TABLE_SESSION_ATTENDANCE ="CREATE TABLE " + TABLE_SESSION_ATTENDANCE + "("
+    private static final String CREATE_TABLE_SESSION_ATTENDANCE ="CREATE TABLE " + TABLE_SESSION_ATTENDANCE + "("
             + ID + varchar_field +", "
             + TRAINING_SESSION_ID + varchar_field + ", "
             + TRAINEE_ID + varchar_field + ", "
@@ -167,7 +199,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             + COMMENT + text_field + ", "
             + ARCHIVED + integer_field + "); ";
 
-    public static final String CREATE_TABLE_SESSION_TOPIC ="CREATE TABLE " + TABLE_SESSION_TOPIC + "("
+    private static final String CREATE_TABLE_SESSION_TOPIC ="CREATE TABLE " + TABLE_SESSION_TOPIC + "("
             + primary_field +", "
             + NAME + varchar_field + ", "
             + COUNTRY + varchar_field + ", "
@@ -177,14 +209,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             + META_DATA + text_field + ", "
             + COMMENT + text_field + "); ";
 
-    //training session
-    private static final String CLASS_ID = "class_id";
-    private static final String TRAINER_ID = "trainer_id";
-    private static final String SESSION_START_TIME = "session_start_time";
-    private static final String SESSION_END_TIME = "session_end_time";
-    private static final String SESSION_TOPIC_ID = "session_topic_id";
-    private static final String SESSION_LEAD_TRAINER = "session_lead_trainer";
-    public static final String CREATE_TABLE_TRAINING_SESSION ="CREATE TABLE " + TABLE_TRAINING_SESSION + "("
+
+    private static final String CREATE_TABLE_TRAINING_SESSION ="CREATE TABLE " + TABLE_TRAINING_SESSION + "("
             + ID + varchar_field+", "
             + TRAINING_SESSION_TYPE_ID + integer_field + ", "
             + CLASS_ID + integer_field + ", "
@@ -200,11 +226,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             + CREATED_BY + real_field + ", "
             + DATE_CREATED + datetime_field +", "
             + COMMENT + text_field + "); ";
-    //training_session_type
-    private static final String SESSION_NAME = "session_name";
-    private static final String READONLY = "readonly";
-    private static final String ROLE_NAME = "role_name";
-    public static final String CREATE_TABLE_TRAINING_SESSION_TYPE ="CREATE TABLE " + TABLE_TRAINING_SESSION_TYPE + "("
+
+    private static final String CREATE_TABLE_TRAINING_SESSION_TYPE ="CREATE TABLE " + TABLE_TRAINING_SESSION_TYPE + "("
             + ID + varchar_field+", "
             + SESSION_NAME + varchar_field + ", "
             + CLASS_ID + integer_field + ", "
@@ -215,7 +238,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             + DATE_CREATED + real_field + ", "
             + COMMENT + text_field + "); ";
 
-    public static final String CREATE_TABLE_TRAINING_STATUS ="CREATE TABLE " + TABLE_TRAINING_STATUS + "("
+    private static final String CREATE_TABLE_TRAINING_STATUS ="CREATE TABLE " + TABLE_TRAINING_STATUS + "("
             + primary_field +", "
             + NAME + varchar_field + ", "
             + ARCHIVED + integer_field + ", "
@@ -226,7 +249,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             + DATE_CREATED + real_field + ", "
             + COMMENT + text_field + "); ";
 
-    public static final String CREATE_TABLE_TRAINING_ROLES ="CREATE TABLE " + TABLE_TRAINING_ROLES + "("
+    private static final String CREATE_TABLE_TRAINING_ROLES ="CREATE TABLE " + TABLE_TRAINING_ROLES + "("
             + primary_field +", "
             + ROLE_NAME + varchar_field + ", "
             + ARCHIVED + integer_field + ", "
@@ -236,8 +259,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             + CREATED_BY + integer_field + ", "
             + DATE_CREATED + real_field + ", "
             + COMMENT + text_field + "); ";
-    public static final String TRAINING_ROLE_ID = "training_role_id";
-    public static final String CREATE_TABLE_TRAINING_TRAINERS ="CREATE TABLE " + TABLE_TRAINING_TRAINERS + "("
+
+    private static final String CREATE_TABLE_TRAINING_TRAINERS ="CREATE TABLE " + TABLE_TRAINING_TRAINERS + "("
             + primary_field +", "
             + TRAINING_ID + varchar_field + ", "
             + CLASS_ID + integer_field + ", "
@@ -249,8 +272,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             + ARCHIVED + integer_field + ", "
             + TRAINING_ROLE_ID + integer_field + ", "
             + COMMENT + text_field + "); ";
-    public static final String CLASS_NAME = "class_name";
-    public static final String CREATE_TABLE_TRAINING_CLASSES ="CREATE TABLE " + TABLE_TRAINING_CLASSES + "("
+
+    private static final String CREATE_TABLE_TRAINING_CLASSES ="CREATE TABLE " + TABLE_TRAINING_CLASSES + "("
             + primary_field +", "
             + TRAINING_ID + varchar_field + ", "
             + CLASS_NAME + varchar_field + ", "
@@ -260,12 +283,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             + DATE_CREATED + datetime_field +", "
             + ARCHIVED + integer_field + ", "
             + COMMENT + text_field + "); ";
-    public static final String REGISTRATION_ID = "registration_id";
-    public static final String BRANCH = "branch";
-    public static final String COHORT = "cohort";
-    public static final String CHP_CODE = "chp_code";
-    public static final String REGISTRATION = "registration";
-    public static final String CREATE_TABLE_TRAINING_TRAINEE ="CREATE TABLE " + TABLE_TRAINING_TRAINEES + "("
+
+    private static final String CREATE_TABLE_TRAINING_TRAINEE ="CREATE TABLE " + TABLE_TRAINING_TRAINEES + "("
             + ID + varchar_field +", "
             + REGISTRATION_ID + varchar_field + ", "
             + CLASS_ID + integer_field + ", "
@@ -282,7 +301,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             + REGISTRATION + text_field + ", " //will be storing the JSON
             + COMMENT + text_field + "); ";
 
-    public static final String CREATE_TABLE_TRAINEE_COMMENTS ="CREATE TABLE " + TABLE_TRAINING_COMMENTS + "("
+    private static final String CREATE_TABLE_TRAINEE_COMMENTS ="CREATE TABLE " + TABLE_TRAINING_COMMENTS + "("
             + ID + varchar_field +", "
             + TRAINEE_ID + varchar_field + ", "
             + TRAINING_ID + varchar_field + ", "
@@ -292,10 +311,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             + CLIENT_TIME + real_field + ", "
             + ARCHIVED + integer_field + ", "
             + COMMENT + text_field + "); ";
-
-    private static final String EMAIL= "email";
-    private static final String USERNAME = "username";
-    private static final String PASSWORD = "password";
 
     private static final String CREATE_TABLE_USERS="CREATE TABLE " + TABLE_USERS + "("
             + ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -332,28 +347,50 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             + CREATED_BY + integer_field + ", "
             + DATE_CREATED + varchar_field + "); ";
 
+    public static final String CREATE_TABLE_TRAINING_EXAM="CREATE TABLE " + TABLE_TRAINING_EXAM + "("
+            + ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+            + EXAM_ID + varchar_field + ", "
+            + DATE_ADMINISTERED + varchar_field + ", "
+            + CREATED_BY + integer_field + ", "
+            + DATE_CREATED + varchar_field + ", "
+            + PASSMARK + integer_field + ", "
+            + TRAINING_ID + varchar_field + ", "
+            + COUNTRY + varchar_field + ", "
+            + TITLE + varchar_field + ", "
+            + CLOUD_EXAM + text_field + ", "
+            + EXAM_STATUS + text_field + ", "
+            + QUESTIONS + text_field + ", "
+            + EXAM_STATUS_ID + integer_field + ", "
+            + ARCHIVED + integer_field + "); ";
+
     public DatabaseHelper(Context context){
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
     @Override
     public void onCreate (SQLiteDatabase db){
-        db.execSQL(CREATE_TABLE_TRAINING);
-        db.execSQL(CREATE_TABLE_TRAINING_VENUE);
-        db.execSQL(CREATE_TABLE_SESSION_ATTENDANCE);
-        db.execSQL(CREATE_TABLE_SESSION_TOPIC);
-        db.execSQL(CREATE_TABLE_TRAINING_SESSION);
-        db.execSQL(CREATE_TABLE_TRAINING_SESSION_TYPE);
-        db.execSQL(CREATE_TABLE_TRAINING_STATUS);
-        db.execSQL(CREATE_TABLE_TRAINING_ROLES);
-        db.execSQL(CREATE_TABLE_TRAINING_TRAINERS);
-        db.execSQL(CREATE_TABLE_TRAINING_CLASSES);
-        db.execSQL(CREATE_TABLE_TRAINING_TRAINEE);
-        db.execSQL(CREATE_TABLE_USERS);
-        db.execSQL(CREATE_TABLE_TRAINEE_COMMENTS);
-        db.execSQL(CREATE_TABLE_BRANCH);
-        db.execSQL(CREATE_TABLE_COHORT);
-        db.execSQL(CREATE_TABLE_TRAINEE_STATUS);
+        try{
+            db.execSQL(CREATE_TABLE_TRAINING);
+            db.execSQL(CREATE_TABLE_TRAINING_EXAM); // not created
+            db.execSQL(CREATE_TABLE_TRAINING_VENUE);
+            db.execSQL(CREATE_TABLE_SESSION_ATTENDANCE);
+            db.execSQL(CREATE_TABLE_SESSION_TOPIC);
+            db.execSQL(CREATE_TABLE_TRAINING_SESSION);
+            db.execSQL(CREATE_TABLE_TRAINING_SESSION_TYPE);
+            db.execSQL(CREATE_TABLE_TRAINING_STATUS);
+            db.execSQL(CREATE_TABLE_TRAINING_ROLES);
+            db.execSQL(CREATE_TABLE_TRAINING_TRAINERS);
+            db.execSQL(CREATE_TABLE_TRAINING_CLASSES);
+            db.execSQL(CREATE_TABLE_TRAINING_TRAINEE);
+            db.execSQL(CREATE_TABLE_USERS);
+            db.execSQL(CREATE_TABLE_TRAINEE_COMMENTS);
+            db.execSQL(CREATE_TABLE_BRANCH);
+            db.execSQL(CREATE_TABLE_COHORT);
+            db.execSQL(CREATE_TABLE_TRAINEE_STATUS);
+        }catch (Exception e){
+            Log.d("TREMAPDB", e.getMessage());
+        }
+
     }
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion){
@@ -398,6 +435,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private String[] cohortColumns = new String[] {ID,COHORT_NAME,COHORT_NUMBER,BRANCH_ID,ARCHIVED};
     private String[] traineeStatusColumns = new String[] {ID,NAME,ARCHIVED,READONLY,COUNTRY,
             CLIENT_TIME, CREATED_BY, DATE_CREATED};
+    private String[] trainingExamColumns = new String[] {ID, EXAM_ID, DATE_ADMINISTERED,
+            CREATED_BY, DATE_CREATED, PASSMARK, TRAINING_ID, COUNTRY, ARCHIVED, TITLE, CLOUD_EXAM,
+            EXAM_STATUS, QUESTIONS, EXAM_STATUS_ID};
 
     /**
      * **************************************
@@ -2467,6 +2507,160 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             Log.d("Tremap", "=======ERR Creating Trainee Status ============");
             Log.d("Tremap", e.getMessage());
             Log.d("Tremap", "===================");
+        }
+    }
+
+    /**
+     * *********************************************************************************************
+     *                                                                                             *
+     * Training Exams                                                                              *
+     * Helps to indicate the status of the training exams and performance                          *
+     * Instead of downloading a whole universe of exams and questions, we can allow users to just  *
+     * select the exams that they want to download. These are the ones that they can administer.   *
+     *                                                                                             *
+     * A good usecase would be to configure exams from the cloud, and the app only downloads the   *
+     * ones for the training(s) needed. This will be the initial approach.                         *
+     * *********************************************************************************************
+     *
+     **/
+
+
+    private TrainingExam cursorToTrainingExam(Cursor cursor){
+        TrainingExam trainingExam = new TrainingExam();
+
+        trainingExam.setId(cursor.getInt(cursor.getColumnIndex(ID)));
+        trainingExam.setExamId(cursor.getInt(cursor.getColumnIndex(EXAM_ID)));
+        trainingExam.setCreatedBy(cursor.getInt(cursor.getColumnIndex(CREATED_BY)));
+        trainingExam.setPassmark(cursor.getInt(cursor.getColumnIndex(PASSMARK)));
+        trainingExam.setArchived(cursor.getInt(cursor.getColumnIndex(ARCHIVED)) == 1);
+        trainingExam.setDateAdministered(cursor.getString(cursor.getColumnIndex(DATE_ADMINISTERED)));
+        trainingExam.setDateCreated(cursor.getString(cursor.getColumnIndex(DATE_CREATED)));
+        trainingExam.setTrainingId(cursor.getString(cursor.getColumnIndex(TRAINING_ID)));
+        trainingExam.setCountry(cursor.getString(cursor.getColumnIndex(COUNTRY)));
+        trainingExam.setTitle(cursor.getString(cursor.getColumnIndex(TITLE)));
+        try{
+            JSONObject exam = new JSONObject(cursor.getString(cursor.getColumnIndex(CLOUD_EXAM)));
+            trainingExam.setCloudExamJson(exam);
+        }catch (Exception e){}
+
+
+        return trainingExam;
+    }
+
+
+    public long addTrainingExam(TrainingExam exam){
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put(ID, exam.getId());
+        cv.put(EXAM_ID, exam.getExamId());
+        cv.put(CREATED_BY, exam.getCreatedBy());
+        cv.put(PASSMARK, exam.getPassmark());
+        cv.put(ARCHIVED, exam.isArchived());
+        cv.put(DATE_ADMINISTERED, exam.getDateAdministered());
+        cv.put(DATE_CREATED, exam.getDateCreated());
+        cv.put(TRAINING_ID, exam.getTrainingId());
+        cv.put(COUNTRY, exam.getCountry());
+        cv.put(TITLE, exam.getTitle());
+        cv.put(CLOUD_EXAM, exam.getCloudExamJson().toString());
+        cv.put(QUESTIONS, exam.getQuestions().toString());
+
+        long id;
+        if(trainingExamExists(exam)){
+            id = db.update(TABLE_TRAINING_EXAM, cv, ID+"='"+exam.getId()+"'",
+                    null);
+        }else{
+            id = db.insertWithOnConflict(TABLE_TRAINING_EXAM, null, cv,
+                    SQLiteDatabase.CONFLICT_REPLACE);
+        }
+        db.close();
+        return id;
+    }
+    public boolean trainingExamExists(TrainingExam exam) {
+        SQLiteDatabase db = getWritableDatabase();
+        Cursor cur = db.rawQuery("SELECT "+ID+" FROM " + TABLE_TRAINING_EXAM + " WHERE "+
+                ID+" = '" + exam.getId() + "'", null);
+        boolean exist = (cur.getCount() > 0);
+        cur.close();
+        return exist;
+
+    }
+
+    public TrainingExam getTrainingExamById(String trainingExamId){
+        SQLiteDatabase db = getWritableDatabase();
+        String whereClause = ID +" = ?";
+        String[] whereArgs = new String[] {
+                trainingExamId,
+        };
+        Cursor cursor=db.query(TABLE_TRAINING_EXAM, trainingExamColumns, whereClause,
+                whereArgs,null,null,null,null);
+        if (!(cursor.moveToFirst()) || cursor.getCount() ==0){
+            return null;
+        }else{
+
+            TrainingExam exam = cursorToTrainingExam(cursor);
+            cursor.close();
+            return exam;
+        }
+    }
+
+    public List<TrainingExam> getTrainingExamsByTrainingId(String trainingId){
+        SQLiteDatabase db = getWritableDatabase();
+        String whereClause = TRAINING_ID +" = ?";
+        String[] whereArgs = new String[] {
+                trainingId,
+        };
+        Cursor cursor=db.query(TABLE_TRAINING_EXAM, trainingExamColumns, whereClause,
+                whereArgs,null,null,null,null);
+        List<TrainingExam> trainingExamList = new ArrayList<>();
+        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()){
+            TrainingExam exam = cursorToTrainingExam(cursor);
+            trainingExamList.add(exam);
+        }
+        cursor.close();
+        return trainingExamList;
+    }
+
+    public void trainingExamFromJson(JSONObject jsonObject){
+        TrainingExam exam = new TrainingExam();
+        try {
+            exam.setId(jsonObject.getInt(ID));
+            if (!jsonObject.isNull(ID)){
+                exam.setId(jsonObject.getInt(ID));
+            }
+            if (!jsonObject.isNull(EXAM_ID)){
+                exam.setExamId(jsonObject.getInt(EXAM_ID));
+            }
+            if (!jsonObject.isNull(TRAINING_ID)){
+                exam.setTrainingId(jsonObject.getString(TRAINING_ID));
+            }
+            if (!jsonObject.isNull(DATE_ADMINISTERED)){
+                exam.setDateAdministered(jsonObject.getString(DATE_ADMINISTERED));
+            }
+            if (!jsonObject.isNull(CREATED_BY)){
+                exam.setCreatedBy(jsonObject.getInt(CREATED_BY));
+            }
+            if (!jsonObject.isNull(DATE_CREATED)){
+                exam.setDateCreated(jsonObject.getString(DATE_CREATED));
+            }
+            if (!jsonObject.isNull(ARCHIVED)){
+                exam.setArchived(jsonObject.getBoolean(ARCHIVED));
+            }
+            if (!jsonObject.isNull(PASSMARK)){
+                exam.setPassmark(jsonObject.getInt(PASSMARK));
+            }
+            if (!jsonObject.isNull(COUNTRY)){
+                exam.setCountry(jsonObject.getString(COUNTRY));
+            }
+            if (!jsonObject.isNull(TITLE)){
+                exam.setTitle(jsonObject.getString(TITLE));
+            }
+            exam.setCloudExamJson(jsonObject);
+
+
+            this.addTrainingExam(exam);
+        }catch (Exception e){
+            Log.d("Tremap", "=======ERR Creating Training Exam ============");
+            Log.d("Tremap", e.getMessage());
         }
     }
 }
