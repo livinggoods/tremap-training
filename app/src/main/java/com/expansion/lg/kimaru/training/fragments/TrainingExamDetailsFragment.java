@@ -22,6 +22,8 @@ import com.expansion.lg.kimaru.training.objs.TrainingExam;
 import com.expansion.lg.kimaru.training.utils.DisplayDate;
 import com.gadiness.kimarudg.ui.alerts.SweetAlert.SweetAlertDialog;
 
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -69,9 +71,27 @@ public class TrainingExamDetailsFragment extends Fragment {
         totalTrainees = view.findViewById(R.id.totalTrainees);
         totalTrainees.setText("0");
         passmark = view.findViewById(R.id.passmark);
-        passmark.setText(exam.getPassmark());
+        passmark.setText(exam.getPassmark().toString());
         examStatus = view.findViewById(R.id.exam_status);
-        examStatus.setText("");
+        JSONObject examJson = exam.getCloudExamJson();
+        if (!examJson.isNull("exam_status")){
+            try {
+                examStatus.setText(examJson.getJSONObject("exam_status").getString("title"));
+            }catch (Exception e){}
+        }
+
+        if (!examJson.isNull("unlock_code")) {
+            try {
+                examCode.setText(String.format("CODE: %s", examJson.getString("unlock_code")));
+            } catch (Exception e) {}
+        }
+
+        if (examJson.isNull("passmark")) {
+            try {
+                passmark.setText(examJson.getString("passmark"));
+            } catch (Exception e) {}
+        }
+
 
         List<SessionAttendance> sessions = new ArrayList<>();
         DatabaseHelper db = new DatabaseHelper(getContext());
