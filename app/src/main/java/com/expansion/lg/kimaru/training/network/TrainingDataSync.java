@@ -8,7 +8,11 @@ import android.util.Log;
 
 import com.expansion.lg.kimaru.training.database.DatabaseHelper;
 import com.expansion.lg.kimaru.training.objs.Training;
+import com.expansion.lg.kimaru.training.utils.Constants;
 import com.expansion.lg.kimaru.training.utils.SessionManagement;
+import com.kimarudg.async.http.AsyncHttpClient;
+import com.kimarudg.async.http.AsyncHttpPost;
+import com.kimarudg.async.http.body.JSONObjectBody;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -25,9 +29,13 @@ import java.util.TimerTask;
 
 public class TrainingDataSync {
     Context context;
+    DatabaseHelper databaseHelper;
+    SessionManagement session;
 
     public TrainingDataSync(Context context){
         this.context = context;
+        this.databaseHelper = new DatabaseHelper(context);
+        session = new SessionManagement(context);
     }
 
     public void pollNewTrainings(){
@@ -72,7 +80,6 @@ public class TrainingDataSync {
                 try{
                     JSONObject reader= new JSONObject(json);
                     JSONArray recs = reader.getJSONArray(sessionManagement.getTrainingJSONRoot());
-                    DatabaseHelper databaseHelper = new DatabaseHelper(context);
                     for (int x = 0; x < recs.length(); x++){
                         Log.d("Tremap", "===================");
                         Log.d("Tremap", recs.getString(x));
@@ -131,7 +138,6 @@ public class TrainingDataSync {
                 try{
                     JSONObject reader= new JSONObject(json);
                     JSONArray recs = reader.getJSONArray(sessionManagement.getTrainingJSONRoot());
-                    DatabaseHelper databaseHelper = new DatabaseHelper(context);
                     for (int x = 0; x < recs.length(); x++){
                         databaseHelper.trainingTraineeFromJson(recs.getJSONObject(x));
                     }
@@ -170,7 +176,6 @@ public class TrainingDataSync {
             if (json != null){
                 try{
                     JSONObject training = new JSONObject(json).getJSONObject(sessionManagement.getTrainingDetailsJsonRoot());
-                    DatabaseHelper databaseHelper = new DatabaseHelper(context);
                     int x;
                     if (!training.isNull("classes")) {
                         JSONArray trainingClassesJson = training.getJSONArray("classes");
@@ -235,7 +240,6 @@ public class TrainingDataSync {
             if (json != null){
                 try{
                     JSONArray sessionTopics = new JSONObject(json).getJSONArray(sessionManagement.getSessionTopicsJsonRoot());
-                    DatabaseHelper databaseHelper = new DatabaseHelper(context);
                     for (int x = 0; x < sessionTopics.length(); x++){
                         databaseHelper.sessionTopicFromJson(sessionTopics.getJSONObject(x));
                     }
@@ -270,7 +274,6 @@ public class TrainingDataSync {
         protected String doInBackground(String... strings){
             String trainingId = strings[0];
             JsonParser jsonParser = new JsonParser();
-            DatabaseHelper databaseHelper = new DatabaseHelper(context);
             SessionManagement sessionManagement = new SessionManagement(context);
             String url = sessionManagement.getApiUrl()+sessionManagement
                     .getSessionAttendanceEndpoint() + "/"+trainingId;
@@ -306,7 +309,6 @@ public class TrainingDataSync {
         @Override
         protected Void doInBackground(Void... voids){
             JsonParser jsonParser = new JsonParser();
-            DatabaseHelper databaseHelper = new DatabaseHelper(context);
             SessionManagement session =  new SessionManagement(context);
             String url = session.getApiUrl()+session.getTraineeStatusEndpoint();
             Log.d("Tremap", "____________________---URL-------------____________");
@@ -343,7 +345,6 @@ public class TrainingDataSync {
         protected String doInBackground(String... strings){
             JsonParser jsonParser = new JsonParser();
             String trainingId = strings[0];
-            DatabaseHelper databaseHelper = new DatabaseHelper(context);
             SessionManagement session =  new SessionManagement(context);
             String url = session.getApiUrl()+ String.format(session.getTrainingExamsEndpoint(), trainingId);
             Log.d("TREMAP", url);
@@ -364,5 +365,103 @@ public class TrainingDataSync {
             }
             return null;
         }
+    }
+
+
+    public void getTrainingExamResults(String examId){
+        new getTrainingExamResultsFromUpstream().execute(examId);
+    }
+
+    private class getTrainingExamResultsFromUpstream extends AsyncTask<String, Void, String>{
+        @Override
+        protected void onPreExecute(){super.onPreExecute();}
+
+        @Override
+        protected String doInBackground(String... strings){
+            JsonParser jsonParser = new JsonParser();
+            String examId = strings[0];
+            SessionManagement session =  new SessionManagement(context);
+            String url = session.getApiUrl()+ String.format(session.getTrainingExamResultsEndpoint(), examId);
+            Log.d("Tremap", "************************************************************************");
+            Log.d("Tremap", url);
+            Log.d("Tremap", "************************************************************************");
+            String json = jsonParser.getJSONFromUrl(url);
+            if (json != null){
+                try{
+                    JSONArray results = new JSONObject(json).getJSONArray(session.getTrainingExamResultsJSONRoot());
+                    for (int x=0; x < results.length(); x++){
+                        databaseHelper.trainingExamResultFromJson(results.getJSONObject(x));
+                    }
+                }catch (Exception e){
+                    Log.d("TREMAPEXAMS", "ERROR TRAINING EXAM RESULTS");
+                    Log.d("Tremap", e.getMessage());
+                }
+            }
+            return null;
+        }
+    }
+
+    public void startUploadAttendanceTask(){
+        final Handler handler = new Handler(Looper.getMainLooper());
+        Timer timer = new Timer();
+        TimerTask getTrainingsTask = new TimerTask() {
+            @Override
+            public void run() {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run()     {
+                        new uploadSessionAttendanceToUpstream().execute("all");
+                    }
+                });
+            }
+        };
+        timer.schedule(getTrainingsTask, 0, 600000 * 60); // every one hour
+    }
+    //SessionAttendance
+    public void uploadSessionAttendance(String trainingId){
+        JSONObject json =databaseHelper.trainingSessionAttendanceToUploadJson(trainingId);
+        try{
+            String syncResults = syncClient(json,
+                    session.getUploadSessionAttendanceEndpoint()+"/"+trainingId);
+        }catch (Exception e){}
+    }
+    private class uploadSessionAttendanceToUpstream extends AsyncTask<String, Void, String>{
+        @Override
+        protected void onPreExecute(){super.onPreExecute();}
+
+        @Override
+        protected String doInBackground(String... strings){
+            String trainingId = strings[0];
+            String syncResults;
+            JSONObject json;
+            try{
+                if (strings[0].equalsIgnoreCase("all")){
+                    json = databaseHelper.allTrainingSessionAttendanceToJson();
+                    syncResults = syncClient(json, session.getUploadSessionAttendanceEndpoint());
+                }else{
+                    json =databaseHelper.trainingSessionAttendanceToUploadJson(trainingId);
+                    syncResults = syncClient(json,
+                            session.getUploadSessionAttendanceEndpoint()+"/"+trainingId);
+                }
+            }catch (Exception e){
+                syncResults = null;
+            }
+            return syncResults;
+        }
+    }
+
+    // Callback for the API
+    private String syncClient(JSONObject json, String apiEndpoint) throws Exception {
+        SessionManagement session = new SessionManagement(context);
+        String url = session.getApiUrl()+apiEndpoint;
+        Log.d("RESULTS : Sync", "+++++++++++++++++++++++++++");
+        Log.d("RESULTS : Sync", url);
+        Log.d("RESULTS : Sync", "+++++++++++++++++++++++++++");
+        AsyncHttpPost p = new AsyncHttpPost(url);
+        p.setBody(new JSONObjectBody(json));
+        JSONObject ret = AsyncHttpClient.getDefaultInstance().executeJSONObject(p, null).get();
+//        return ret.getString(expectedJsonRoot);
+        Log.d("RESULTS : Sync", ret.toString());
+        return ret.toString();
     }
 }

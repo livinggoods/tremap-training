@@ -55,6 +55,7 @@ public class SessionAttendanceFragment extends Fragment {
     List<SessionAttendance> sessionAttendances = new ArrayList<>();
     FloatingActionButton fab;
     Button btnGetSelected;
+    DatabaseHelper databaseHelper;
 
     TrainingSession session = null;
     public SessionAttendanceFragment() {}
@@ -73,6 +74,7 @@ public class SessionAttendanceFragment extends Fragment {
         TrainingsSessionsFragment backFragment = new TrainingsSessionsFragment();
         backFragment.training = new DatabaseHelper(getContext()).getTrainingById(session.getTrainingId());
         MainActivity.backFragment = backFragment;
+        databaseHelper = new DatabaseHelper(getContext());
 
         View v;
         v =  inflater.inflate(R.layout.fragment_attendance, container, false);
@@ -90,6 +92,11 @@ public class SessionAttendanceFragment extends Fragment {
             public void onRowLongClicked(int position) {
 
             }
+            @Override
+            public void onTraineeSelected(){
+                String selected = String.valueOf(rAdapter.getSelectedTrainees().size());
+                btnGetSelected.setText("("+selected+") selected");
+            }
         });
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(mLayoutManager);
@@ -103,10 +110,22 @@ public class SessionAttendanceFragment extends Fragment {
             }
         });
 
-        btnGetSelected.setVisibility(View.GONE);
+//        btnGetSelected.setVisibility(View.GONE);
         btnGetSelected.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                // save the seelected to DB
+                for (SessionAttendance s : rAdapter.getSelectedTrainees()){
+                    databaseHelper.addSessionAttendance(s);
+                }
+                getSessionAttendanceData();
+
+                String selected = String.valueOf(rAdapter.getSelectedTrainees().size());
+                btnGetSelected.setText("("+selected+") selected");
+                // also try uploading
+                TrainingDataSync upload = new TrainingDataSync(getContext());
+                upload.uploadSessionAttendance(session.getTrainingId());
+                upload.startUploadAttendanceTask();
             }
         });
         return v;
@@ -209,18 +228,17 @@ public class SessionAttendanceFragment extends Fragment {
     }
 
 
-
     private void getSessionAttendanceData() {
         swipeRefreshLayout.setRefreshing(true);
         try{
             new TrainingDataSync(getContext()).getSessionAttendance(session.getTrainingId());
         }catch (Exception e){}
-        DatabaseHelper databaseHelper = new DatabaseHelper(getContext());
         sessionAttendances.clear();
 
         try {
             List<SessionAttendance> sessions = new ArrayList<>();
-            sessions = databaseHelper.getSessionAttendancesBySessionId(session.getId());
+            // sessions = databaseHelper.getSessionAttendancesBySessionId(session.getId());
+            sessions = databaseHelper.getNotAttendedSessionAttendancesBySessionId(session.getId(), "0");
             for (SessionAttendance s: sessions){
                 sessionAttendances.add(s);
             }

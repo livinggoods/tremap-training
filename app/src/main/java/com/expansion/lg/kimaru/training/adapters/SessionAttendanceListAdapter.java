@@ -41,6 +41,7 @@ public class SessionAttendanceListAdapter extends Adapter<SessionAttendanceListA
     private SparseBooleanArray selectedItems, selectedItemsIndex;
     private boolean reverseAllActions = false;
     private static int currentSelectedIndex = -1;
+    private List<SessionAttendance> selectedAttendees = new ArrayList<>();
 
     public class ListHolder extends ViewHolder implements View.OnLongClickListener{
         public TextView title, message;
@@ -100,6 +101,14 @@ public class SessionAttendanceListAdapter extends Adapter<SessionAttendanceListA
                 SessionAttendance attendance = sessionAttendances.get(holder.getAdapterPosition());
                 attendance.setAttended(isAttending);
                 databaseHelper.addSessionAttendance(attendance);
+
+                if (isAttending){
+                    selectedAttendees.add(attendance);
+                }else{
+                    selectedAttendees.remove(attendance);
+                }
+                //listener.onRowLongClicked(getAdapterPosition());
+                listener.onTraineeSelected();
             }
         });
     }
@@ -121,7 +130,15 @@ public class SessionAttendanceListAdapter extends Adapter<SessionAttendanceListA
 
     public interface SessionAttendanceListAdapterListener{
         void onRowLongClicked(int position);
+        void onTraineeSelected();
+
 
     }
+    public List<SessionAttendance> getSelectedTrainees(){
+        return this.selectedAttendees;
+    };
 
+    public void removeUploadedItem(SessionAttendance s, int position){
+        selectedAttendees.add(position, s);
+    }
 }

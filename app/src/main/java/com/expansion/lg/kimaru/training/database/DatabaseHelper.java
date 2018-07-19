@@ -17,6 +17,7 @@ import com.expansion.lg.kimaru.training.objs.Training;
 import com.expansion.lg.kimaru.training.objs.TrainingClass;
 import com.expansion.lg.kimaru.training.objs.TrainingComment;
 import com.expansion.lg.kimaru.training.objs.TrainingExam;
+import com.expansion.lg.kimaru.training.objs.TrainingExamResult;
 import com.expansion.lg.kimaru.training.objs.TrainingRole;
 import com.expansion.lg.kimaru.training.objs.TrainingSession;
 import com.expansion.lg.kimaru.training.objs.TrainingSessionType;
@@ -69,6 +70,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String TABLE_COHORT = "cohort";
     private static final String TABLE_TRAINEE_STATUS = "trainee_status";
     private static final String TABLE_TRAINING_EXAM = "training_exams";
+    private static final String TABLE_EXAM_RESULTS = "exam_results";
 
     // fields for Training
     private static final String ID = "id";
@@ -144,6 +146,24 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String QUESTIONS = "questions";
     private static final String CLOUD_EXAM = "cloud_exam";
 
+    private static final String ANSWER = "answer";
+    private static final String CHOICE_ID = "choice_id";
+    private static final String QUESTION_ID = "question_id";
+    private static final String QUESTION_SCORE = "question_score";
+    private static final String TRAINING_EXAM_ID = "training_exam_id";
+
+    private static final String CREATE_EXAM_RESULTS_TABLE = "CREATE TABLE "+ TABLE_EXAM_RESULTS +"("
+            + ID + integer_field+ ", "
+            + ARCHIVED + real_field + ", "
+            + CHOICE_ID + integer_field + ", "
+            + COUNTRY + varchar_field + ", "
+            + ANSWER + text_field + ", "
+            + CREATED_BY + integer_field + ", "
+            + DATE_CREATED + varchar_field + ", "
+            + QUESTION_ID + integer_field + ", "
+            + QUESTION_SCORE + integer_field + ", "
+            + TRAINEE_ID + varchar_field + ", "
+            + TRAINING_EXAM_ID + varchar_field + "); ";
 
     private static final String CREATE_TABLE_TRAINING ="CREATE TABLE " + TABLE_TRAINING + "("
             + ID + varchar_field +", "
@@ -387,6 +407,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             db.execSQL(CREATE_TABLE_BRANCH);
             db.execSQL(CREATE_TABLE_COHORT);
             db.execSQL(CREATE_TABLE_TRAINEE_STATUS);
+            db.execSQL(CREATE_EXAM_RESULTS_TABLE);
         }catch (Exception e){
             Log.d("TREMAPDB", e.getMessage());
         }
@@ -438,6 +459,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private String[] trainingExamColumns = new String[] {ID, EXAM_ID, DATE_ADMINISTERED,
             CREATED_BY, DATE_CREATED, PASSMARK, TRAINING_ID, COUNTRY, ARCHIVED, TITLE, CLOUD_EXAM,
             EXAM_STATUS, QUESTIONS, EXAM_STATUS_ID};
+    private String[] trainingExamResultColumns = new String[] {ID, ARCHIVED, CHOICE_ID, COUNTRY, ANSWER,
+            CREATED_BY, DATE_CREATED, QUESTION_ID, QUESTION_SCORE, TRAINEE_ID, TRAINING_EXAM_ID};
 
     /**
      * **************************************
@@ -950,6 +973,25 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return sessionAttendanceList;
     }
 
+    public List<SessionAttendance> getNotAttendedSessionAttendancesBySessionId(String sessionId,
+                                                                               String attended){
+        SQLiteDatabase db = getWritableDatabase();
+        String whereClause = TRAINING_SESSION_ID +" = ? AND " + ATTENDED +" = ? ";
+        String[] whereArgs = new String[] {
+                sessionId,
+                attended,
+        };
+        Cursor cursor=db.query(TABLE_SESSION_ATTENDANCE, sessionAttendanceColumns, whereClause,
+                whereArgs,null,null,null,null);
+        List<SessionAttendance> sessionAttendanceList = new ArrayList<>();
+        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()){
+            SessionAttendance sessionAttendance = cursorToSessionAttendance(cursor);
+            sessionAttendanceList.add(sessionAttendance);
+        }
+        cursor.close();
+        return sessionAttendanceList;
+    }
+
     public List<SessionAttendance> getSessionAttendancesByTraineeId(String traineeId){
         SQLiteDatabase db = getWritableDatabase();
         String whereClause = TRAINEE_ID +" = ?";
@@ -1038,15 +1080,38 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             if (!jsonObject.isNull(COMMENT)){
                 sessionAttendance.setComment(jsonObject.getString(COMMENT));
             }
-            if (!jsonObject.isNull(ARCHIVED)){
-                sessionAttendance.setArchived(jsonObject.getInt(ARCHIVED)==1);
+            if (!jsonObject.isNull(ARCHIVED)) {
+                sessionAttendance.setArchived(jsonObject.getInt(ARCHIVED) == 1);
             }
-            this.addSessionAttendance(sessionAttendance);
+            if (!jsonObject.isNull(ATTENDED)){
+                if (jsonObject.getInt(ATTENDED) !=1){
+                    this.addSessionAttendance(sessionAttendance);
+                }
+            }
+
         }catch (Exception e){
             Log.d("TremapJSON", e.getMessage());
         }
     }
 
+    public JSONObject trainingSessionAttendanceToUploadJson(String trainingId){
+        SQLiteDatabase db = getWritableDatabase();
+        String whereClause = TRAINING_ID +" = ? AND "+ATTENDED+" = ?";
+        String[] whereArgs = new String[] {
+                trainingId,
+                "1"
+        };
+        Cursor cursor=db.query(TABLE_SESSION_ATTENDANCE, sessionAttendanceColumns, whereClause,
+                whereArgs,null,null,null,null);
+        return cursorToJson(cursor, TABLE_SESSION_ATTENDANCE);
+    }
+
+    public JSONObject allTrainingSessionAttendanceToJson(){
+        SQLiteDatabase db = getWritableDatabase();
+        Cursor cursor=db.query(TABLE_SESSION_ATTENDANCE, sessionAttendanceColumns, null,
+                null,null,null,null,null);
+        return cursorToJson(cursor, TABLE_SESSION_ATTENDANCE);
+    }
 
     /**
      * ************************************
@@ -1910,6 +1975,24 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
+    public TrainingTrainee getTrainingTraineeByRegistrationId(String registrationId){
+        SQLiteDatabase db = getWritableDatabase();
+        String whereClause = REGISTRATION_ID +" = ?";
+        String[] whereArgs = new String[] {
+                registrationId,
+        };
+        Cursor cursor=db.query(TABLE_TRAINING_TRAINEES, trainingTraineeColumns, whereClause,
+                whereArgs,null,null,null,null);
+        if (!(cursor.moveToFirst()) || cursor.getCount() ==0){
+            return null;
+        }else{
+
+            TrainingTrainee trainingTrainee = cursorToTrainingTrainee(cursor);
+            cursor.close();
+            return trainingTrainee;
+        }
+    }
+
     public List<TrainingTrainee> getTrainingTraineesByClassId(String classId){
         SQLiteDatabase db = getWritableDatabase();
         String whereClause = CLASS_ID +" = ?";
@@ -2661,6 +2744,188 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }catch (Exception e){
             Log.d("Tremap", "=======ERR Creating Training Exam ============");
             Log.d("Tremap", e.getMessage());
+        }
+    }
+
+
+    /**
+     * *********************************************************************************************
+     *                                                                                             *
+     * Training Exams Results            engage                                                    *
+     *                                                                                             *
+     * *********************************************************************************************
+     *
+     **/
+
+    private TrainingExamResult cursorToTrainingExamResult(Cursor cursor){
+        TrainingExamResult result = new TrainingExamResult();
+        result.setId(cursor.getInt(cursor.getColumnIndex(ID)));
+        result.setAnswer(cursor.getString(cursor.getColumnIndex(ANSWER)));
+        result.setArchived(cursor.getInt(cursor.getColumnIndex(ARCHIVED))==1);
+        result.setChoiceId(cursor.getInt(cursor.getColumnIndex(CHOICE_ID)));
+        result.setCountry(cursor.getString(cursor.getColumnIndex(COUNTRY)));
+        result.setCreatedBy(cursor.getInt(cursor.getColumnIndex(CREATED_BY)));
+        result.setDateCreated(cursor.getString(cursor.getColumnIndex(DATE_CREATED)));
+        result.setQuestionId(cursor.getInt(cursor.getColumnIndex(QUESTION_ID)));
+        result.setQuestionScore(cursor.getInt(cursor.getColumnIndex(QUESTION_SCORE)));
+        result.setTraineeId(cursor.getString(cursor.getColumnIndex(TRAINEE_ID)));
+        result.setTrainingExamId(cursor.getInt(cursor.getColumnIndex(TRAINING_EXAM_ID)));
+
+        return result;
+    }
+
+    public void trainingExamResultFromJson(JSONObject jsonObject){
+        TrainingExamResult result = new TrainingExamResult();
+        try {
+            if (!jsonObject.isNull(ID)){
+                result.setId(jsonObject.getInt(ID));
+            }
+            if (!jsonObject.isNull(ANSWER)){
+                result.setAnswer(jsonObject.getString(ANSWER));
+            }
+            if (!jsonObject.isNull(ARCHIVED)){
+                result.setArchived(jsonObject.getBoolean(ARCHIVED));
+            }
+            if (!jsonObject.isNull(CHOICE_ID)){
+                result.setChoiceId(jsonObject.getInt(CHOICE_ID));
+            }
+            if (!jsonObject.isNull(COUNTRY)){
+                result.setCountry(jsonObject.getString(COUNTRY));
+            }
+            if (!jsonObject.isNull(CREATED_BY)){
+                result.setCreatedBy(jsonObject.getInt(CREATED_BY));
+            }
+            if (!jsonObject.isNull(DATE_CREATED)){
+                result.setDateCreated(jsonObject.getString(DATE_CREATED));
+            }
+            if (!jsonObject.isNull(QUESTION_ID)){
+                result.setQuestionId(jsonObject.getInt(QUESTION_ID));
+            }
+            if (!jsonObject.isNull(QUESTION_SCORE)){
+                result.setQuestionScore(jsonObject.getInt(QUESTION_SCORE));
+            }
+            if (!jsonObject.isNull(TRAINEE_ID)){
+                result.setTraineeId(jsonObject.getString(TRAINEE_ID));
+            }
+            if (!jsonObject.isNull(TRAINING_EXAM_ID)){
+                result.setTrainingExamId(jsonObject.getInt(TRAINING_EXAM_ID));
+            }
+
+            this.addTrainingExamResult(result);
+        }catch (Exception e){
+            Log.d("Tremap", "=======ERR Creating Training Exam Result ============");
+            Log.d("Tremap", e.getMessage());
+        }
+    }
+
+    public long addTrainingExamResult(TrainingExamResult exam){
+        SQLiteDatabase db = getWritableDatabase();
+
+        ContentValues cv = new ContentValues();
+        cv.put(ID, exam.getId());
+        cv.put(ARCHIVED, exam.isArchived());
+        cv.put(CHOICE_ID, exam.getChoiceId());
+        cv.put(COUNTRY, exam.getCountry());
+        cv.put(CREATED_BY, exam.getCreatedBy());
+        cv.put(DATE_CREATED, exam.getDateCreated());
+        cv.put(QUESTION_ID, exam.getQuestionId());
+        cv.put(QUESTION_SCORE, exam.getQuestionScore());
+        cv.put(TRAINEE_ID, exam.getTraineeId());
+        cv.put(TRAINING_EXAM_ID, exam.getTrainingExamId());
+        cv.put(ANSWER, exam.getAnswer());
+
+        long id;
+        if(trainingExamResultExists(exam)){
+            id = db.update(TABLE_EXAM_RESULTS, cv, ID+"='"+exam.getId()+"'",
+                    null);
+        }else{
+            id = db.insertWithOnConflict(TABLE_EXAM_RESULTS, null, cv,
+                    SQLiteDatabase.CONFLICT_REPLACE);
+        }
+        db.close();
+        return id;
+    }
+    public boolean trainingExamResultExists(TrainingExamResult exam) {
+        SQLiteDatabase db = getWritableDatabase();
+        Cursor cur = db.rawQuery("SELECT "+ID+" FROM " + TABLE_EXAM_RESULTS + " WHERE "+
+                ID+" = '" + exam.getId() + "'", null);
+        boolean exist = (cur.getCount() > 0);
+        cur.close();
+        return exist;
+
+    }
+
+
+    public List<TrainingExamResult> getTrainingExamResultByTrainee(String traineeId){
+        SQLiteDatabase db = getWritableDatabase();
+        String whereClause = TRAINEE_ID +" = ?";
+        String[] whereArgs = new String[] {
+                traineeId,
+        };
+        Cursor cursor=db.query(TABLE_EXAM_RESULTS, trainingExamResultColumns, whereClause,
+                whereArgs,null,null,null,null);
+        List<TrainingExamResult> trainingExamResults = new ArrayList<>();
+        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()){
+            TrainingExamResult result = cursorToTrainingExamResult(cursor);
+            trainingExamResults.add(result);
+        }
+        cursor.close();
+        return trainingExamResults;
+    }
+
+    public List<TrainingExamResult> getTrainingExamResultByExam(String examId){
+        SQLiteDatabase db = getWritableDatabase();
+        String whereClause = TRAINING_EXAM_ID +" = ?";
+        String[] whereArgs = new String[] {
+                examId,
+        };
+        Cursor cursor=db.query(TABLE_EXAM_RESULTS, trainingExamResultColumns, whereClause,
+                whereArgs,TRAINEE_ID,null,null,null);
+        List<TrainingExamResult> trainingExamResults = new ArrayList<>();
+        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()){
+            TrainingExamResult result = cursorToTrainingExamResult(cursor);
+            trainingExamResults.add(result);
+        }
+        cursor.close();
+        return trainingExamResults;
+    }
+
+
+    public List<TrainingExamResult> getTrainingExamResultByQuestionId(String questionId){
+        SQLiteDatabase db = getWritableDatabase();
+        String whereClause = QUESTION_ID +" = ?";
+        String[] whereArgs = new String[] {
+                questionId,
+        };
+        Cursor cursor=db.query(TABLE_EXAM_RESULTS, trainingExamResultColumns, whereClause,
+                whereArgs,null,null,null,null);
+        List<TrainingExamResult> trainingExamResults = new ArrayList<>();
+        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()){
+            TrainingExamResult result = cursorToTrainingExamResult(cursor);
+            trainingExamResults.add(result);
+        }
+        cursor.close();
+        return trainingExamResults;
+    }
+
+    public TrainingExamResult getTrainingExamResultByExamQuestionAndTrainee(String questionId,
+                                                                String examId, String trainee){
+        SQLiteDatabase db = getWritableDatabase();
+        String whereClause = TRAINING_EXAM_ID +" = ? AND " + TRAINEE_ID + " = ? AND "+ QUESTION_ID + "= ? ";
+        String[] whereArgs = new String[] {
+                examId,
+                trainee,
+                questionId
+        };
+        Cursor cursor=db.query(TABLE_EXAM_RESULTS, trainingExamResultColumns, whereClause,
+                whereArgs,null,null,null,null);
+        if (!(cursor.moveToFirst()) || cursor.getCount() ==0){
+            return null;
+        }else{
+
+            TrainingExamResult exam = cursorToTrainingExamResult(cursor);
+            cursor.close();
+            return exam;
         }
     }
 }

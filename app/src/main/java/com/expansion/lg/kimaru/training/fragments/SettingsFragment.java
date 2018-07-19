@@ -24,11 +24,14 @@ public class SettingsFragment extends Fragment {
     SessionManagement sessionManagement;
     TextView cloudUrl, apiPrefix, apiVersion, apiSuffix, trainingEndpoint, trainingDetailsEndpoint,
             trainingDetailsJSONRoot, trainingJsonRoot, usersEndpoint, sessionTopicsEndpoint,
-            sessionTopicsJsonRoot, traineeStatusJsonRoot, traineeStatusApi;
+            sessionTopicsJsonRoot, traineeStatusJsonRoot, traineeStatusApi, examResultApi,
+            examResultJson, attendanceViewJson;
+
+
     RelativeLayout appCloudUrlView, appApiPrefixView,appApiRelative, appiSuffixRelative, appTrainingRelative,
             trainingDetailsEndpointRelative, trainingDetailsJSONRootView, trainingJsonRootView,
             usersEndpointView, sessionTopicsJsonView,sessionTopicsView, traineeStatusApiView,
-            traineeStatusJsonView;
+            traineeStatusJsonView, examResultApiView, examResultJSONView, attendanceView;
 
     public SettingsFragment(){}
 
@@ -60,9 +63,10 @@ public class SettingsFragment extends Fragment {
         usersEndpoint = (TextView) view.findViewById(R.id.usersEndpoint);
         sessionTopicsEndpoint = (TextView) view.findViewById(R.id.sessionTopicsEndpoint);
         sessionTopicsJsonRoot = (TextView) view.findViewById(R.id.sessionTopicsJsonEndpoint);
-
+        attendanceViewJson = (TextView) view.findViewById(R.id.attendanceViewJson);
         traineeStatusJsonRoot = (TextView) view.findViewById(R.id.traineeStatusJsonRoot);
         traineeStatusApi = (TextView) view.findViewById(R.id.traineeStatusApi);
+        examResultApi = (TextView) view.findViewById(R.id.examResultApi);
 
         // Relative Views to Allow Clicking
         appCloudUrlView = (RelativeLayout) view.findViewById(R.id.appCloudUrlView);
@@ -78,6 +82,10 @@ public class SettingsFragment extends Fragment {
         sessionTopicsView = (RelativeLayout) view.findViewById(R.id.usersSessionTopicsView);
         traineeStatusApiView = (RelativeLayout) view.findViewById(R.id.traineeSessionApiView);
         traineeStatusJsonView = (RelativeLayout) view.findViewById(R.id.traineeSessionJsonView);
+        attendanceView = (RelativeLayout) view.findViewById(R.id.attendanceView);
+
+        examResultApiView = (RelativeLayout) view.findViewById(R.id.examResultApiView);
+        examResultJSONView = (RelativeLayout) view.findViewById(R.id.examResultJSONView);
 
 
 
@@ -504,6 +512,104 @@ public class SettingsFragment extends Fragment {
                         if (!enteredText.trim().equals("")){
                             sessionManagement.saveTraineeStatusEndpoint(enteredText);
                             traineeStatusApi.setText(sessionManagement.getTraineeStatusEndpoint());
+                        }
+                    }
+                });
+                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+                builder.show();
+            }
+        });
+
+        attendanceView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                builder.setTitle("Attendance API");
+                final EditText userText = new EditText(getContext());
+                userText.setHint("Api Endpoint");
+                userText.setText(sessionManagement.getUploadSessionAttendanceEndpoint());
+                LinearLayout layout = new LinearLayout(getContext());
+                layout.setOrientation(LinearLayout.VERTICAL);
+                layout.addView(userText);
+                builder.setView(layout);
+                builder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        String enteredText = userText.getText().toString();
+                        if (!enteredText.trim().equals("")){
+                            sessionManagement.uploadSessionAttendanceEndpoint(enteredText);
+                            attendanceViewJson.setText(sessionManagement.getUploadSessionAttendanceEndpoint());
+                        }
+                    }
+                });
+                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+                builder.show();
+            }
+        });
+
+
+        examResultApiView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                builder.setTitle("Exam Result Endpoint");
+                final EditText userText = new EditText(getContext());
+                userText.setHint("Api Endpoint");
+                userText.setText(sessionManagement.getTrainingExamResultsEndpoint());
+                LinearLayout layout = new LinearLayout(getContext());
+                layout.setOrientation(LinearLayout.VERTICAL);
+                layout.addView(userText);
+                builder.setView(layout);
+                builder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        String enteredText = userText.getText().toString();
+                        if (!enteredText.trim().equals("")){
+                            sessionManagement.saveTrainingExamResultsEndpoint(enteredText);
+                            examResultApi.setText(sessionManagement.getTrainingExamResultsEndpoint());
+                        }
+                    }
+                });
+                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+                builder.show();
+            }
+        });
+
+
+        examResultJSONView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                builder.setTitle("JSON Root");
+                final EditText userText = new EditText(getContext());
+                userText.setHint("Json Root");
+                userText.setText(sessionManagement.getTrainingExamResultsJSONRoot());
+                LinearLayout layout = new LinearLayout(getContext());
+                layout.setOrientation(LinearLayout.VERTICAL);
+                layout.addView(userText);
+                builder.setView(layout);
+                builder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        String enteredText = userText.getText().toString();
+                        if (!enteredText.trim().equals("")){
+                            sessionManagement.saveTrainingExamResultsJSONRoot(enteredText);
+                            examResultJson.setText(sessionManagement.getTrainingExamResultsJSONRoot());
                         }
                     }
                 });

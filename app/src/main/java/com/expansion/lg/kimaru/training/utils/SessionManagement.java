@@ -36,9 +36,13 @@ public class SessionManagement {
     private static final String SESSION_TOPIC_JSON_ROOT = "session_topic_json_root";
 
     private static final String SESSION_ATTENDANCE_ENDPOINT = "session_attendance_endpoint";
+    private static final String UPLOAD_SESSION_ATTENDANCE_ENDPOINT = "upload_session_attendance_endpoint";
     private static final String SESSION_ATTENDANCE_JSON_ROOT = "session_attendance_json_root";
     private static final String TRAINING_EXAMS_ENDPOINT = "training_exams_endpoint";
     private static final String TRAINING_EXAMS_JSON_ROOT = "training_exams_json_root";
+
+    private static final String TRAINING_EXAMS_RESULTS_ENDPOINT = "training_exams_results_endpoint";
+    private static final String TRAINING_EXAMS_RESULTS_JSON_ROOT = "results";
 
     private static final String IS_LOGIN = "IsLoggedIn";
     public static final String KEY_NAME = "name";
@@ -221,6 +225,16 @@ public class SessionManagement {
         return endpoint;
     }
 
+    //Session Attendance Endpoint
+    public void uploadSessionAttendanceEndpoint(String sessionAttendanceEndpoint){
+        editor.putString(UPLOAD_SESSION_ATTENDANCE_ENDPOINT, sessionAttendanceEndpoint);
+        editor.commit();
+    }
+    public String getUploadSessionAttendanceEndpoint (){
+        String endpoint = pref.getString(UPLOAD_SESSION_ATTENDANCE_ENDPOINT, "sync/training/session-attendances");
+        return endpoint;
+    }
+
     //Session Attendance JSON Root
     public void saveSessionAttendanceJSONRoot(String sessionAttendanceJSONRoot){
         editor.putString(SESSION_ATTENDANCE_JSON_ROOT, sessionAttendanceJSONRoot);
@@ -248,6 +262,22 @@ public class SessionManagement {
     }
     public String getTrainingExamsEndpoint (){
         return  pref.getString(TRAINING_EXAMS_ENDPOINT, "training/%s/exams");
+    }
+
+    public void saveTrainingExamResultsEndpoint(String trainingExamResultsEndpoint){
+        editor.putString(TRAINING_EXAMS_RESULTS_ENDPOINT, trainingExamResultsEndpoint);
+        editor.commit();
+    }
+    public String getTrainingExamResultsEndpoint (){
+        return  pref.getString(TRAINING_EXAMS_RESULTS_ENDPOINT, "exam/%s/results");
+    }
+
+    public void saveTrainingExamResultsJSONRoot(String trainingExamResultsJsonRoot){
+        editor.putString(TRAINING_EXAMS_RESULTS_JSON_ROOT, trainingExamResultsJsonRoot);
+        editor.commit();
+    }
+    public String getTrainingExamResultsJSONRoot (){
+        return  pref.getString(TRAINING_EXAMS_RESULTS_JSON_ROOT, "results");
     }
 
     public HashMap<String, String> getUserDetails (){
