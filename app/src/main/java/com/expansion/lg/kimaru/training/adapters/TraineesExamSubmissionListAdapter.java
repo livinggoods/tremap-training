@@ -106,7 +106,7 @@ public class TraineesExamSubmissionListAdapter extends Adapter<TraineesExamSubmi
 
         //Get all submissions by this trainee for this exam
         List<TrainingExamResult>  submittedQuestions = databaseHelper
-                .getTrainingExamResultByTrainee(trainee.getRegistrationId());
+                .getTrainingExamResultByExamTraineeId(exam.getId().toString(), trainee.getRegistrationId());
 
         int noOfSubmittedQuestions = submittedQuestions.size();
         String submissionStatus = "";
@@ -131,6 +131,11 @@ public class TraineesExamSubmissionListAdapter extends Adapter<TraineesExamSubmi
             }
             examTotalMarks = totalMarks.toString();
             examStatus = totalMarks >= exam.getPassmark() ? "PASS" : "FAILED";
+
+            if (exam.getPassmark() == 0) {
+                // Trainer did not set a passmark for this exam
+                examStatus = "UNKNOWN";
+            }
         }
         holder.subTitle.setText(examTotalMarks);
 
