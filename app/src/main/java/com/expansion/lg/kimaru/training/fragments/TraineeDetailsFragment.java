@@ -1,11 +1,15 @@
 package com.expansion.lg.kimaru.training.fragments;
 
+import android.app.Activity;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Layout;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,20 +19,28 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.expansion.lg.kimaru.training.R;
 import com.expansion.lg.kimaru.training.activity.MainActivity;
 import com.expansion.lg.kimaru.training.database.DatabaseHelper;
 import com.expansion.lg.kimaru.training.objs.SessionAttendance;
 import com.expansion.lg.kimaru.training.objs.TraineeStatus;
+import com.expansion.lg.kimaru.training.objs.TrainingExam;
+import com.expansion.lg.kimaru.training.objs.TrainingExamResult;
 import com.expansion.lg.kimaru.training.objs.TrainingTrainee;
 import com.expansion.lg.kimaru.training.utils.DisplayDate;
 import com.expansion.lg.kimaru.training.utils.SessionManagement;
 import com.gadiness.kimarudg.ui.alerts.SweetAlert.SweetAlertDialog;
+import com.google.gson.JsonArray;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Created by kimaru on 3/14/18.
@@ -123,6 +135,10 @@ public class TraineeDetailsFragment extends Fragment {
                 showWarnig();
             }
         });
+
+        LinearLayout layoutCertifications = (LinearLayout) view.findViewById(R.id.layout_certifications);
+        setupCertificationsView(layoutCertifications);
+
         return view;
     }
 
@@ -135,6 +151,97 @@ public class TraineeDetailsFragment extends Fragment {
             }catch (Exception e){
                 ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle("Trainee Profile");
             }
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == 2000) {
+            if (resultCode == Activity.RESULT_OK) {
+                String json = data.getStringExtra("results");
+
+                if (json != null){
+                    try {
+                        DatabaseHelper db = new DatabaseHelper(getContext());
+                        JSONArray results = new JSONArray(json);
+
+                        for (Integer x = 0; x < results.length(); x++){
+                            JSONObject item = results.getJSONObject(x);
+                            UUID uuid = UUID.randomUUID();
+                            item.put("archived", false);
+                            item.put("id", uuid.toString());
+                            item.put("date_created", System.currentTimeMillis());
+
+                            db.trainingExamResultFromJson(item);
+                        }
+
+                    } catch (Exception e){
+                        e.printStackTrace();
+                        Toast.makeText(getContext(), "An error has occurred. Please try again", Toast.LENGTH_LONG)
+                                .show();
+                    }
+                } else {
+                    Toast.makeText(getContext(), "Invalid Results. Please try again", Toast.LENGTH_LONG)
+                            .show();
+                }
+
+            } else {
+                Toast.makeText(getContext(), "Failed. Please try again", Toast.LENGTH_LONG)
+                        .show();
+            }
+
+        }
+
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    private void setupCertificationsView(LinearLayout view) {
+
+        DatabaseHelper db = new DatabaseHelper(getContext());
+        List<TrainingExam> exams = db.getTrainingExamsByTrainingId(trainingTrainee.getTrainingId());
+
+        List<TrainingExam> certifications = new ArrayList<>();
+        for (TrainingExam exam: exams) {
+            if (exam.getCertificationTypeId() > 0)
+                certifications.add(exam);
+        }
+
+        LayoutInflater inflater = LayoutInflater.from(getContext());
+
+        for (final TrainingExam exam: certifications) {
+
+            View layoutCertItem = inflater.inflate(R.layout.layout_item_certification, null);
+
+            List<TrainingExamResult> myResults = db.getTrainingExamResultByExamTraineeId(exam.getId().toString(), trainingTrainee.getId());
+
+            final boolean hasBeenCertified = myResults.size() >= exam.getQuestions().length();
+
+            TextView tvName = layoutCertItem.findViewById(R.id.tv_name);
+            tvName.setText(exam.getTitle());
+
+            TextView tvHasBeenCerfied = layoutCertItem.findViewById(R.id.tv_is_certified);
+            tvHasBeenCerfied.setVisibility(hasBeenCertified ? View.VISIBLE : View.GONE);
+
+            Button btnCertify = layoutCertItem.findViewById(R.id.btn_certify);
+            btnCertify.setVisibility(!hasBeenCertified ? View.VISIBLE : View.GONE);
+            btnCertify.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    Intent intent = new Intent();
+
+                    intent.setAction("org.livinggoods.exam.ACTION_TAKE_EXAM");
+
+                    intent.putExtra("exam_json", exam.getCloudExamJson().toString());
+                    intent.putExtra("trainee_id", trainingTrainee.getId());
+                    intent.putExtra("training_id", trainingTrainee.getTrainingId());
+                    intent.putExtra("other_app", true);
+
+                    startActivityForResult(intent, 2000);
+                }
+            });
+
+            view.addView(layoutCertItem);
         }
     }
 

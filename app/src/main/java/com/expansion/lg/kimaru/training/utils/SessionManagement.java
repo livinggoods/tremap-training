@@ -42,6 +42,7 @@ public class SessionManagement {
     private static final String TRAINING_EXAMS_JSON_ROOT = "training_exams_json_root";
 
     private static final String TRAINING_EXAMS_RESULTS_ENDPOINT = "training_exams_results_endpoint";
+    private static final String TRAINING_CERTIFICATION_ENDPOINT = "training_certifications";
     private static final String TRAINING_EXAMS_RESULTS_JSON_ROOT = "results";
 
     private static final String IS_LOGIN = "IsLoggedIn";
@@ -262,6 +263,10 @@ public class SessionManagement {
     }
     public String getTrainingExamsEndpoint (){
         return  pref.getString(TRAINING_EXAMS_ENDPOINT, "training/%s/exams");
+    }
+
+    public String getTrainingCertificationsEndpoint() {
+        return  pref.getString(TRAINING_CERTIFICATION_ENDPOINT, "training/%s/certifications");
     }
 
     public void saveTrainingExamResultsEndpoint(String trainingExamResultsEndpoint){

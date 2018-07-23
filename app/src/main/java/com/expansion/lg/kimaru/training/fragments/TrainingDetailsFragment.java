@@ -95,7 +95,6 @@ public class TrainingDetailsFragment extends Fragment implements  View.OnClickLi
     Typeface mTfLight, mTfRegular;
     Button traineesButton, sessionsButton, classesButton;
 
-
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState){
         View v = inflater.inflate(R.layout.training_details_view, container, false);
@@ -187,6 +186,8 @@ public class TrainingDetailsFragment extends Fragment implements  View.OnClickLi
         super.onActivityCreated(savedInstanceState);
         if (training != null){
             ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle(training.getTrainingName());
+
+            new TrainingDataSync(getContext()).startPollUploadExamResults(training.getId());
         }
     }
 
