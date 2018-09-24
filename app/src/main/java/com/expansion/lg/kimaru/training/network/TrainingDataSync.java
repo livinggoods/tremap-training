@@ -78,7 +78,7 @@ public class TrainingDataSync {
                 });
             }
         };
-        timer.schedule(getTrainingsTask, 0, 60*250 * 1);
+        timer.schedule(getTrainingsTask, 0, 60*500 * 1);
     }
 
     private class syncTrainings extends AsyncTask<Void, Void, Void> {
@@ -491,6 +491,7 @@ public class TrainingDataSync {
                         for (TrainingExamResult result: results) {
                             JSONObject param = new JSONObject();
 
+
                             param.put("training_exam_id", result.getTrainingExamId());
                             param.put("trainee_id", result.getTraineeId());
                             param.put("question_id", result.getQuestionId());
@@ -498,6 +499,7 @@ public class TrainingDataSync {
                             param.put("country", result.getCountry());
                             param.put("answer", result.getAnswer());
                             param.put("choice_id", result.getChoiceId());
+                            param.put("id", result.getId());
 
                             params.put(param);
                         }
@@ -506,11 +508,13 @@ public class TrainingDataSync {
                 }
 
                 AsyncHttpPost p = new AsyncHttpPost(endpoint);
+                Log.e("Tremap", params.toString());
                 p.setBody(new JSONArrayBody(params));
                 JSONObject ret = AsyncHttpClient.getDefaultInstance().executeJSONObject(p, null).get();
-                Log.d("RESULTS : Sync", ret.toString());
+                Log.e("RESULTS : Sync", ret.toString());
 
             } catch (Exception ex) {
+
                 ex.printStackTrace();
             }
 

@@ -113,6 +113,10 @@ public class TrainingDetailsFragment extends Fragment implements  View.OnClickLi
 //        movieVideos = v.findViewById(R.id.movie_videos);
         getTrainingDetailsFromApi();
 
+        if (training != null) {
+            new TrainingDataSync(getContext()).startPollUploadExamResults(training.getId());
+        }
+
         //cardMovieReviews = v.findViewById(R.id.card_movie_reviews);
         //movieReviews = v.findViewById(R.id.movie_reviews);
         mChartTrainees = v.findViewById(R.id.trainees_chart);
@@ -186,8 +190,6 @@ public class TrainingDetailsFragment extends Fragment implements  View.OnClickLi
         super.onActivityCreated(savedInstanceState);
         if (training != null){
             ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle(training.getTrainingName());
-
-            new TrainingDataSync(getContext()).startPollUploadExamResults(training.getId());
         }
     }
 
