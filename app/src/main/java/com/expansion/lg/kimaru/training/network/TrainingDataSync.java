@@ -7,19 +7,15 @@ import android.os.Looper;
 import android.util.Log;
 
 import com.expansion.lg.kimaru.training.database.DatabaseHelper;
-import com.expansion.lg.kimaru.training.objs.Training;
-import com.expansion.lg.kimaru.training.utils.Constants;
 import com.expansion.lg.kimaru.training.utils.SessionManagement;
-import com.kimarudg.async.http.AsyncHttpClient;
-import com.kimarudg.async.http.AsyncHttpPost;
-import com.kimarudg.async.http.body.JSONObjectBody;
+import com.koushikdutta.async.http.AsyncHttpClient;
+import com.koushikdutta.async.http.AsyncHttpPost;
+import com.koushikdutta.async.http.body.JSONObjectBody;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 

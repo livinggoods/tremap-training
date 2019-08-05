@@ -1,13 +1,9 @@
 package com.expansion.lg.kimaru.training.activity;
 
 import android.os.Handler;
-import android.preference.PreferenceFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
-import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -26,8 +22,6 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.expansion.lg.kimaru.training.R;
 import com.expansion.lg.kimaru.training.fragments.HomeFragment;
 import com.expansion.lg.kimaru.training.fragments.SettingsFragment;
-import com.expansion.lg.kimaru.training.fragments.SetttingFragment;
-import com.expansion.lg.kimaru.training.fragments.TrainingsFragment;
 import com.expansion.lg.kimaru.training.utils.CircleTransform;
 import com.expansion.lg.kimaru.training.utils.SessionManagement;
 

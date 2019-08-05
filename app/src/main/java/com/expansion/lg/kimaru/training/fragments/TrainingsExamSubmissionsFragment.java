@@ -6,12 +6,10 @@ package com.expansion.lg.kimaru.training.fragments;
 
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.graphics.Canvas;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -21,7 +19,6 @@ import android.support.v7.view.ActionMode;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -42,7 +39,6 @@ import com.expansion.lg.kimaru.training.objs.TrainingExam;
 import com.expansion.lg.kimaru.training.objs.TrainingExamResult;
 import com.expansion.lg.kimaru.training.objs.TrainingTrainee;
 import com.expansion.lg.kimaru.training.receivers.ConnectivityReceiver;
-import com.expansion.lg.kimaru.training.swipehelpers.TraineeRecyclerItemTouchHelper;
 import com.expansion.lg.kimaru.training.utils.DividerItemDecoration;
 import com.expansion.lg.kimaru.training.utils.SessionManagement;
 

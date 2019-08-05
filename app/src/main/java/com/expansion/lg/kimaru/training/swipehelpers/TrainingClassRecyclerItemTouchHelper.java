@@ -6,7 +6,6 @@ import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.View;
 
 import com.expansion.lg.kimaru.training.adapters.TrainingClassListAdapter;
-import com.expansion.lg.kimaru.training.objs.TrainingClass;
 
 /**
  * Created by kimaru on 2/27/18.

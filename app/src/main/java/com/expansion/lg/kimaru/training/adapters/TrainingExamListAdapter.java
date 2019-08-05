@@ -16,7 +16,6 @@ import android.widget.TextView;
 
 import com.expansion.lg.kimaru.training.R;
 import com.expansion.lg.kimaru.training.objs.TrainingExam;
-import com.expansion.lg.kimaru.training.utils.DisplayDate;
 import com.expansion.lg.kimaru.training.utils.FlipAnimator;
 
 import java.util.ArrayList;

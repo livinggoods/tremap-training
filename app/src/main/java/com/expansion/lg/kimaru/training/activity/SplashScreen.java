@@ -2,20 +2,12 @@ package com.expansion.lg.kimaru.training.activity;
 
 import android.content.Intent;
 import android.os.AsyncTask;
-import android.os.Handler;
-import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Base64;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
@@ -23,7 +15,6 @@ import com.expansion.lg.kimaru.training.R;
 import com.expansion.lg.kimaru.training.database.DatabaseHelper;
 import com.expansion.lg.kimaru.training.network.JsonParser;
 import com.expansion.lg.kimaru.training.network.TrainingDataSync;
-import com.expansion.lg.kimaru.training.objs.User;
 import com.expansion.lg.kimaru.training.receivers.ConnectivityReceiver;
 import com.expansion.lg.kimaru.training.receivers.TremapApp;
 import com.expansion.lg.kimaru.training.utils.CircleTransform;
@@ -32,8 +23,6 @@ import com.expansion.lg.kimaru.training.utils.SessionManagement;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import butterknife.ButterKnife;
 
 public class SplashScreen extends AppCompatActivity implements ConnectivityReceiver.ConnectivityReceiverListener {
     String now_playing, earned;

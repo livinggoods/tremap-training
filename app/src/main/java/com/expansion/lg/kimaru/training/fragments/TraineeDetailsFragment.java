@@ -1,29 +1,24 @@
 package com.expansion.lg.kimaru.training.fragments;
 
 import android.content.DialogInterface;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.expansion.lg.kimaru.training.R;
 import com.expansion.lg.kimaru.training.activity.MainActivity;
 import com.expansion.lg.kimaru.training.database.DatabaseHelper;
 import com.expansion.lg.kimaru.training.objs.SessionAttendance;
-import com.expansion.lg.kimaru.training.objs.TraineeStatus;
 import com.expansion.lg.kimaru.training.objs.TrainingTrainee;
 import com.expansion.lg.kimaru.training.utils.DisplayDate;
-import com.expansion.lg.kimaru.training.utils.SessionManagement;
 import com.gadiness.kimarudg.ui.alerts.SweetAlert.SweetAlertDialog;
 
 import java.util.ArrayList;

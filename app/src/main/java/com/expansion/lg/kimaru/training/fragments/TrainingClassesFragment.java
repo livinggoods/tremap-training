@@ -35,7 +35,7 @@ import com.expansion.lg.kimaru.training.R;
 import com.expansion.lg.kimaru.training.activity.MainActivity;
 import com.expansion.lg.kimaru.training.adapters.TrainingClassListAdapter;
 import com.expansion.lg.kimaru.training.database.DatabaseHelper;
-//import com.expansion.lg.kimaru.training.network.TrainingDataSync;
+//import TrainingDataSync;
 import com.expansion.lg.kimaru.training.network.TrainingDataSync;
 import com.expansion.lg.kimaru.training.objs.Training;
 import com.expansion.lg.kimaru.training.objs.TrainingClass;
@@ -47,9 +47,7 @@ import com.expansion.lg.kimaru.training.utils.SessionManagement;
 import java.util.ArrayList;
 import java.util.List;
 
-import retrofit2.http.POST;
-
-//import com.expansion.lg.kimaru.training.swipehelpers.TrainingRecyclerItemTouchHelper;
+//import TrainingRecyclerItemTouchHelper;
 
 /**
  * A simple {@link Fragment} subclass.

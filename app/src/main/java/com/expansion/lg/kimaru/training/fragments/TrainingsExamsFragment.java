@@ -37,7 +37,6 @@ import com.expansion.lg.kimaru.training.adapters.TrainingExamListAdapter;
 import com.expansion.lg.kimaru.training.database.DatabaseHelper;
 import com.expansion.lg.kimaru.training.network.TrainingDataSync;
 import com.expansion.lg.kimaru.training.objs.Training;
-import com.expansion.lg.kimaru.training.objs.TrainingClass;
 import com.expansion.lg.kimaru.training.objs.TrainingExam;
 import com.expansion.lg.kimaru.training.receivers.ConnectivityReceiver;
 import com.expansion.lg.kimaru.training.swipehelpers.TrainingExamsRecyclerItemTouchHelper;

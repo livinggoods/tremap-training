@@ -17,7 +17,6 @@ import android.support.v7.view.ActionMode;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -38,7 +37,7 @@ import com.expansion.lg.kimaru.training.utils.DividerItemDecoration;
 import java.util.ArrayList;
 import java.util.List;
 
-//import com.expansion.lg.kimaru.training.swipehelpers.TrainingRecyclerItemTouchHelper;
+//import TrainingRecyclerItemTouchHelper;
 
 /**
  * A simple {@link Fragment} subclass.

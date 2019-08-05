@@ -1,8 +1,6 @@
 package com.expansion.lg.kimaru.training.fragments;
 
 
-import android.graphics.Color;
-import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.ColorInt;
 import android.support.annotation.Nullable;
@@ -10,16 +8,11 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.CardView;
-import android.text.SpannableString;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -31,28 +24,7 @@ import com.expansion.lg.kimaru.training.activity.MainActivity;
 import com.expansion.lg.kimaru.training.database.DatabaseHelper;
 import com.expansion.lg.kimaru.training.network.TrainingDataSync;
 import com.expansion.lg.kimaru.training.objs.Training;
-import com.expansion.lg.kimaru.training.objs.TrainingTrainee;
 import com.expansion.lg.kimaru.training.receivers.ConnectivityReceiver;
-import com.expansion.lg.kimaru.training.utils.charts.ChartItem;
-import com.expansion.lg.kimaru.training.utils.charts.LineChartItem;
-import com.github.mikephil.charting.animation.Easing;
-import com.github.mikephil.charting.charts.LineChart;
-import com.github.mikephil.charting.charts.PieChart;
-import com.github.mikephil.charting.components.Legend;
-import com.github.mikephil.charting.data.Entry;
-import com.github.mikephil.charting.data.LineData;
-import com.github.mikephil.charting.data.LineDataSet;
-import com.github.mikephil.charting.data.PieData;
-import com.github.mikephil.charting.data.PieDataSet;
-import com.github.mikephil.charting.data.PieEntry;
-import com.github.mikephil.charting.formatter.PercentFormatter;
-import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
-import com.github.mikephil.charting.utils.ColorTemplate;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import butterknife.ButterKnife;
 
 /**
  * Created by kimaru on 3/30/17.

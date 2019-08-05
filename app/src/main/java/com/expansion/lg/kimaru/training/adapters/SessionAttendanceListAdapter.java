@@ -3,7 +3,6 @@ package com.expansion.lg.kimaru.training.adapters;
 
 
 import android.content.Context;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.Adapter;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.util.SparseBooleanArray;

@@ -40,7 +40,7 @@ import com.expansion.lg.kimaru.training.receivers.ConnectivityReceiver;
 import com.expansion.lg.kimaru.training.swipehelpers.TrainingRecyclerItemTouchHelper;
 import com.expansion.lg.kimaru.training.utils.DividerItemDecoration;
 import com.expansion.lg.kimaru.training.database.DatabaseHelper;
-//import com.expansion.lg.kimaru.training.swipehelpers.TrainingRecyclerItemTouchHelper;
+//import TrainingRecyclerItemTouchHelper;
 import com.expansion.lg.kimaru.training.utils.SessionManagement;
 
 import java.util.ArrayList;

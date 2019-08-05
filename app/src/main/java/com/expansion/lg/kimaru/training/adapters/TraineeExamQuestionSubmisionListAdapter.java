@@ -22,7 +22,6 @@ import com.expansion.lg.kimaru.training.database.DatabaseHelper;
 import com.expansion.lg.kimaru.training.objs.TrainingExam;
 import com.expansion.lg.kimaru.training.objs.TrainingExamResult;
 import com.expansion.lg.kimaru.training.objs.TrainingTrainee;
-import com.expansion.lg.kimaru.training.utils.DisplayDate;
 import com.expansion.lg.kimaru.training.utils.FlipAnimator;
 
 import org.json.JSONArray;
