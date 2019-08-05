@@ -11,9 +11,9 @@ package com.expansion.lg.kimaru.training.objs;
  */
 
 public class TrainingExamResult {
-    String answer, country, dateCreated, traineeId;
+    String answer, country, dateCreated, traineeId, id;
     boolean archived;
-    int choiceId, createdBy, id, questionId, questionScore, trainingExamId;
+    int choiceId, createdBy, questionId, questionScore, trainingExamId;
     int color = -1;
 
     public TrainingExamResult() {
@@ -47,7 +47,7 @@ public class TrainingExamResult {
         return createdBy;
     }
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 
@@ -92,7 +92,7 @@ public class TrainingExamResult {
         this.createdBy = createdBy;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 

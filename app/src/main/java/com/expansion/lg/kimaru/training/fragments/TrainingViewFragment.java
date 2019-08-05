@@ -62,6 +62,7 @@ public class TrainingViewFragment extends Fragment implements  View.OnClickListe
         classesButton = v.findViewById(R.id.classesButton);
         getTrainingDetailsFromApi();
         getTrainingExamsFromApi();
+        syncExamResults();
 
         DatabaseHelper db = new DatabaseHelper(getContext());
         trainingName.setText(training.getTrainingName());
@@ -188,6 +189,14 @@ public class TrainingViewFragment extends Fragment implements  View.OnClickListe
         try{
             new TrainingDataSync(getContext()).getTrainingExams(training.getId());
         }catch (Exception e){}
+    }
+
+    private void syncExamResults() {
+        try {
+            new TrainingDataSync(getContext()).startPollUploadExamResults(training.getId());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
     private boolean isConnected(){

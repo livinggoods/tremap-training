@@ -299,6 +299,7 @@ public class TrainingsExamsFragment extends Fragment implements TrainingExamsRec
         } catch (Exception error){
             Toast.makeText(getContext(), "No Exam found", Toast.LENGTH_SHORT).show();
             textshow.setText(error.getMessage());
+            error.printStackTrace();
         }
         swipeRefreshLayout.setRefreshing(false);
     }

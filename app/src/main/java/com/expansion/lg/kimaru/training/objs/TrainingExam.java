@@ -26,12 +26,14 @@ public class TrainingExam {
     JSONObject status;
     JSONArray questions;
 
+    int certificationTypeId = -1;
+
     public TrainingExam() {}
 
     public TrainingExam(Integer id, Integer examId, Integer createdBy, Integer passmark,
                         boolean archived, String dateAdministered, String dateCreated,
                         String trainingId, String country, String title,
-                        JSONObject cloudExamJson) {
+                        JSONObject cloudExamJson, int certificationTypeId) {
         this.id = id;
         this.examId = examId;
         this.createdBy = createdBy;
@@ -43,6 +45,7 @@ public class TrainingExam {
         this.country = country;
         this.title = title;
         this.cloudExamJson = cloudExamJson;
+        this.certificationTypeId = certificationTypeId;
         try {
             this.examCode = cloudExamJson.getString("code");
             this.questions = cloudExamJson.getJSONArray("questions");
@@ -177,5 +180,13 @@ public class TrainingExam {
             this.status = cloudExamJson.getJSONObject("exam_status");
             this.statusId = cloudExamJson.getInt("exam_status_id");
         }catch (Exception e){}
+    }
+
+    public int getCertificationTypeId() {
+        return certificationTypeId;
+    }
+
+    public void setCertificationTypeId(int certificationTypeId) {
+        this.certificationTypeId = certificationTypeId;
     }
 }

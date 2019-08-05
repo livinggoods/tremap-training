@@ -49,7 +49,6 @@ public class TrainingDetailsFragment extends Fragment implements  View.OnClickLi
     Typeface mTfLight, mTfRegular;
     Button traineesButton, sessionsButton, classesButton;
 
-
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState){
         View v = inflater.inflate(R.layout.training_details_view, container, false);
@@ -67,6 +66,10 @@ public class TrainingDetailsFragment extends Fragment implements  View.OnClickLi
         //cardMovieVideos = v.findViewById(R.id.card_movie_videos);
 //        movieVideos = v.findViewById(R.id.movie_videos);
         getTrainingDetailsFromApi();
+
+        if (training != null) {
+            new TrainingDataSync(getContext()).startPollUploadExamResults(training.getId());
+        }
 
         //cardMovieReviews = v.findViewById(R.id.card_movie_reviews);
         //movieReviews = v.findViewById(R.id.movie_reviews);

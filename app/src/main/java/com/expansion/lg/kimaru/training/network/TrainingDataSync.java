@@ -8,14 +8,21 @@ import android.util.Log;
 
 import com.expansion.lg.kimaru.training.database.DatabaseHelper;
 import com.expansion.lg.kimaru.training.utils.SessionManagement;
+import com.expansion.lg.kimaru.training.objs.Training;
+import com.expansion.lg.kimaru.training.objs.TrainingExam;
+import com.expansion.lg.kimaru.training.objs.TrainingExamResult;
+import com.expansion.lg.kimaru.training.utils.Constants;
+import com.expansion.lg.kimaru.training.utils.SessionManagement;
 import com.koushikdutta.async.http.AsyncHttpClient;
 import com.koushikdutta.async.http.AsyncHttpPost;
+import com.koushikdutta.async.http.body.JSONArrayBody;
 import com.koushikdutta.async.http.body.JSONObjectBody;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -38,7 +45,6 @@ public class TrainingDataSync {
         new syncTrainings().execute();
     }
 
-
     public void startPollNewTrainingsTask(){
 
         final Handler handler = new Handler(Looper.getMainLooper());
@@ -57,7 +63,23 @@ public class TrainingDataSync {
         timer.schedule(getTrainingsTask, 0, 60*500 * 1); //every 30 minutes
     }
 
+    public void startPollUploadExamResults(final String trainingId){
 
+        final Handler handler = new Handler(Looper.getMainLooper());
+        Timer timer = new Timer();
+        TimerTask getTrainingsTask = new TimerTask() {
+            @Override
+            public void run() {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        new UploadCertificationsResults().execute(trainingId);
+                    }
+                });
+            }
+        };
+        timer.schedule(getTrainingsTask, 0, 60*500 * 1);
+    }
 
     private class syncTrainings extends AsyncTask<Void, Void, Void> {
         @Override
@@ -331,6 +353,33 @@ public class TrainingDataSync {
 
     public void getTrainingExams(String trainingId){
         new getTrainingExamsFromUpstream().execute(trainingId);
+        new GetTrainingCertifications().execute(trainingId);
+    }
+
+    private class GetTrainingCertifications extends AsyncTask<String, Void, String> {
+        protected String doInBackground(String ...strings) {
+            JsonParser jsonParser = new JsonParser();
+            String trainingId = strings[0];
+            SessionManagement session =  new SessionManagement(context);
+            String url = session.getApiUrl()+ String.format(session.getTrainingCertificationsEndpoint(), trainingId);
+            Log.d("TREMAP", url);
+            Log.d("TREMAP", url);
+            Log.d("TREMAP", url);
+
+            String json = jsonParser.getJSONFromUrl(url);
+            if (json != null){
+                try{
+                    JSONArray exams = new JSONObject(json).getJSONArray(session.getTrainingExamsJSONRoot());
+                    for (int x=0; x < exams.length(); x++){
+                        databaseHelper.trainingExamFromJson(exams.getJSONObject(x));
+                    }
+                }catch (Exception e){
+                    Log.d("TREMAPEXAMS", "ERROR TRAINING EXAMS");
+                    Log.d("Tremap", e.getMessage());
+                }
+            }
+            return null;
+        }
     }
 
     private class getTrainingExamsFromUpstream extends AsyncTask<String, Void, String>{
@@ -421,6 +470,58 @@ public class TrainingDataSync {
                     session.getUploadSessionAttendanceEndpoint()+"/"+trainingId);
         }catch (Exception e){}
     }
+
+    private class UploadCertificationsResults extends AsyncTask<String, Void, String> {
+
+        @Override
+        protected String doInBackground(String... strings) {
+
+            String trainingId = strings[0];
+            DatabaseHelper db = new DatabaseHelper(context);
+            String endpoint = session.getApiUrl() + "training/exam/result/save";
+
+            List<TrainingExam> exams = db.getTrainingExamsByTrainingId(trainingId);
+
+            try {
+
+                JSONArray params = new JSONArray();
+                for (TrainingExam exam: exams) {
+                    if (exam.getCertificationTypeId() > 0) {
+                        List<TrainingExamResult> results = db.getTrainingExamResultsByExam(exam.getId().toString());
+                        for (TrainingExamResult result: results) {
+                            JSONObject param = new JSONObject();
+
+
+                            param.put("training_exam_id", result.getTrainingExamId());
+                            param.put("trainee_id", result.getTraineeId());
+                            param.put("question_id", result.getQuestionId());
+                            param.put("question_score", result.getQuestionScore());
+                            param.put("country", result.getCountry());
+                            param.put("answer", result.getAnswer());
+                            param.put("choice_id", result.getChoiceId());
+                            param.put("id", result.getId());
+
+                            params.put(param);
+                        }
+
+                    }
+                }
+
+                AsyncHttpPost p = new AsyncHttpPost(endpoint);
+                Log.e("Tremap", params.toString());
+                p.setBody(new JSONArrayBody(params));
+                JSONObject ret = AsyncHttpClient.getDefaultInstance().executeJSONObject(p, null).get();
+                Log.e("RESULTS : Sync", ret.toString());
+
+            } catch (Exception ex) {
+
+                ex.printStackTrace();
+            }
+
+            return null;
+        }
+    }
+
     private class uploadSessionAttendanceToUpstream extends AsyncTask<String, Void, String>{
         @Override
         protected void onPreExecute(){super.onPreExecute();}

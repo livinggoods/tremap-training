@@ -103,6 +103,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DATE_ADMINISTERED = "date_administered";
     private static final String EXAM_ID = "exam_id";
     private static final String TITLE = "title";
+    private static final String CERTIFICATION_TYPE_ID = "certification_type_id";
     // training venue
     private static final String NAME = "name";
     private static final String MAPPING = "mapping";
@@ -153,7 +154,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String TRAINING_EXAM_ID = "training_exam_id";
 
     private static final String CREATE_EXAM_RESULTS_TABLE = "CREATE TABLE "+ TABLE_EXAM_RESULTS +"("
-            + ID + integer_field+ ", "
+            + ID + varchar_field+ ", "
             + ARCHIVED + real_field + ", "
             + CHOICE_ID + integer_field + ", "
             + COUNTRY + varchar_field + ", "
@@ -367,7 +368,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             + CREATED_BY + integer_field + ", "
             + DATE_CREATED + varchar_field + "); ";
 
-    public static final String CREATE_TABLE_TRAINING_EXAM="CREATE TABLE " + TABLE_TRAINING_EXAM + "("
+    public static final String CREATE_TABLE_TRAINING_EXAM="CREATE TABLE IF NOT EXISTS " + TABLE_TRAINING_EXAM + "("
             + ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
             + EXAM_ID + varchar_field + ", "
             + DATE_ADMINISTERED + varchar_field + ", "
@@ -381,7 +382,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             + EXAM_STATUS + text_field + ", "
             + QUESTIONS + text_field + ", "
             + EXAM_STATUS_ID + integer_field + ", "
-            + ARCHIVED + integer_field + "); ";
+            + CERTIFICATION_TYPE_ID + integer_field + ", "
+            + ARCHIVED + integer_field + ");";
 
     public DatabaseHelper(Context context){
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -458,7 +460,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             CLIENT_TIME, CREATED_BY, DATE_CREATED};
     private String[] trainingExamColumns = new String[] {ID, EXAM_ID, DATE_ADMINISTERED,
             CREATED_BY, DATE_CREATED, PASSMARK, TRAINING_ID, COUNTRY, ARCHIVED, TITLE, CLOUD_EXAM,
-            EXAM_STATUS, QUESTIONS, EXAM_STATUS_ID};
+            EXAM_STATUS, QUESTIONS, EXAM_STATUS_ID, CERTIFICATION_TYPE_ID};
     private String[] trainingExamResultColumns = new String[] {ID, ARCHIVED, CHOICE_ID, COUNTRY, ANSWER,
             CREATED_BY, DATE_CREATED, QUESTION_ID, QUESTION_SCORE, TRAINEE_ID, TRAINING_EXAM_ID};
 
@@ -2621,10 +2623,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         trainingExam.setTrainingId(cursor.getString(cursor.getColumnIndex(TRAINING_ID)));
         trainingExam.setCountry(cursor.getString(cursor.getColumnIndex(COUNTRY)));
         trainingExam.setTitle(cursor.getString(cursor.getColumnIndex(TITLE)));
+
+        trainingExam.setCertificationTypeId(cursor.getInt(cursor.getColumnIndex(CERTIFICATION_TYPE_ID)));
         try{
             JSONObject exam = new JSONObject(cursor.getString(cursor.getColumnIndex(CLOUD_EXAM)));
             trainingExam.setCloudExamJson(exam);
-        }catch (Exception e){}
+        }catch (Exception e){ e.printStackTrace(); }
 
 
         return trainingExam;
@@ -2646,6 +2650,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         cv.put(TITLE, exam.getTitle());
         cv.put(CLOUD_EXAM, exam.getCloudExamJson().toString());
         cv.put(QUESTIONS, exam.getQuestions().toString());
+        cv.put(CERTIFICATION_TYPE_ID, exam.getCertificationTypeId());
 
         long id;
         if(trainingExamExists(exam)){
@@ -2737,6 +2742,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             if (!jsonObject.isNull(TITLE)){
                 exam.setTitle(jsonObject.getString(TITLE));
             }
+
+            if (!jsonObject.isNull(CERTIFICATION_TYPE_ID)) {
+                exam.setCertificationTypeId(jsonObject.getInt(CERTIFICATION_TYPE_ID));
+            } else {
+                exam.setCertificationTypeId(-1);
+            }
+
             exam.setCloudExamJson(jsonObject);
 
 
@@ -2759,7 +2771,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private TrainingExamResult cursorToTrainingExamResult(Cursor cursor){
         TrainingExamResult result = new TrainingExamResult();
-        result.setId(cursor.getInt(cursor.getColumnIndex(ID)));
+        result.setId(cursor.getString(cursor.getColumnIndex(ID)));
         result.setAnswer(cursor.getString(cursor.getColumnIndex(ANSWER)));
         result.setArchived(cursor.getInt(cursor.getColumnIndex(ARCHIVED))==1);
         result.setChoiceId(cursor.getInt(cursor.getColumnIndex(CHOICE_ID)));
@@ -2778,7 +2790,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         TrainingExamResult result = new TrainingExamResult();
         try {
             if (!jsonObject.isNull(ID)){
-                result.setId(jsonObject.getInt(ID));
+                result.setId(jsonObject.getString(ID));
             }
             if (!jsonObject.isNull(ANSWER)){
                 result.setAnswer(jsonObject.getString(ANSWER));
@@ -2812,9 +2824,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             }
 
             this.addTrainingExamResult(result);
+
         }catch (Exception e){
-            Log.d("Tremap", "=======ERR Creating Training Exam Result ============");
-            Log.d("Tremap", e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -2890,6 +2902,40 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return trainingExamResults;
     }
 
+    public List<TrainingExamResult> getTrainingExamResultsByExam(String examId){
+        SQLiteDatabase db = getWritableDatabase();
+        String whereClause = TRAINING_EXAM_ID +" = ?";
+        String[] whereArgs = new String[] {
+                examId
+        };
+        Cursor cursor=db.query(TABLE_EXAM_RESULTS, trainingExamResultColumns, whereClause,
+                whereArgs,null,null,null,null);
+        List<TrainingExamResult> trainingExamResults = new ArrayList<>();
+        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()){
+            TrainingExamResult result = cursorToTrainingExamResult(cursor);
+            trainingExamResults.add(result);
+        }
+        cursor.close();
+        return trainingExamResults;
+    }
+
+    public List<TrainingExamResult> getTrainingExamResultByExamTraineeId(String examId, String traineeId){
+        SQLiteDatabase db = getWritableDatabase();
+        String whereClause = TRAINING_EXAM_ID +" = ? AND " + TRAINEE_ID + " = ? ";
+        String[] whereArgs = new String[] {
+                examId,
+                traineeId
+        };
+        Cursor cursor=db.query(TABLE_EXAM_RESULTS, trainingExamResultColumns, whereClause,
+                whereArgs,null,null,null,null);
+        List<TrainingExamResult> trainingExamResults = new ArrayList<>();
+        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()){
+            TrainingExamResult result = cursorToTrainingExamResult(cursor);
+            trainingExamResults.add(result);
+        }
+        cursor.close();
+        return trainingExamResults;
+    }
 
     public List<TrainingExamResult> getTrainingExamResultByQuestionId(String questionId){
         SQLiteDatabase db = getWritableDatabase();
@@ -2927,5 +2973,39 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             cursor.close();
             return exam;
         }
+    }
+
+    public void alterDatabaseTable(String tableName, String[] tableFields, String alterStatement){
+        /**
+         * SQLITE database does not allow modification of the cols
+         * `read documentations
+         */
+        // Rename the table
+        // create table
+        // copy data to the new table
+        // drop the old table
+
+        StringBuffer buffer = new StringBuffer();
+        if (tableFields.length > 0){
+            buffer.append(tableFields[0]);
+            for (int i = 1; i < tableFields.length; i++){
+                buffer.append(",").append(tableFields[i]);
+            }
+        }
+        String fields = buffer.toString();
+
+        String renameTable = "ALTER TABLE "+tableName+ " RENAME TO _"+tableName;
+        String modifyStatement = alterStatement;
+        String copyDataSQLToNewTable = "INSERT INTO "+tableName+" ("
+                +fields+ ") SELECT "+fields + " FROM _"+tableName+";";
+        String dropOldTable = "DROP TABLE IF EXISTS _"+tableName;
+
+        // we execute the sqls
+        SQLiteDatabase db = getWritableDatabase();
+        db.execSQL(renameTable);
+        db.execSQL(modifyStatement);
+        db.execSQL(copyDataSQLToNewTable);
+        db.execSQL(dropOldTable);
+        db.close();
     }
 }
