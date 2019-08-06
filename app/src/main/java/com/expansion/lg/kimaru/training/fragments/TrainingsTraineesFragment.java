@@ -4,6 +4,7 @@ package com.expansion.lg.kimaru.training.fragments;
  * Created by kimaru on 3/11/17.
  */
 
+import android.app.SearchManager;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
@@ -24,10 +25,12 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -46,7 +49,8 @@ import com.expansion.lg.kimaru.training.utils.SessionManagement;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TrainingsTraineesFragment extends Fragment implements TraineeRecyclerItemTouchHelper.RecyclerItemTouchHelperListener {
+public class TrainingsTraineesFragment extends Fragment implements TraineeRecyclerItemTouchHelper.
+        RecyclerItemTouchHelperListener, SearchView.OnQueryTextListener{
     private OnFragmentInteractionListener mListener;
     TextView textshow;
     FloatingActionButton fab;
@@ -63,6 +67,7 @@ public class TrainingsTraineesFragment extends Fragment implements TraineeRecycl
     Training training = null;
     TrainingClass trainingClass = null;
 
+
     public TrainingsTraineesFragment() {}
 
     @Override
@@ -70,6 +75,26 @@ public class TrainingsTraineesFragment extends Fragment implements TraineeRecycl
         setHasOptionsMenu(true);
         super.onCreate(savedInstanceState);
     }
+
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater = getActivity().getMenuInflater();
+        inflater.inflate(R.menu.options_menu, menu);
+        super.onCreateOptionsMenu(menu,inflater);
+
+        //Associate searchable configuration with the SearchView
+        SearchManager searchManager = (SearchManager) getActivity().getSystemService(Context.SEARCH_SERVICE);
+        SearchView searchView = (SearchView) menu.findItem(R.id.search).getActionView();
+        searchView.setSearchableInfo(
+                searchManager.getSearchableInfo(getActivity().getComponentName()));
+
+        searchView.setSubmitButtonEnabled(true);
+        searchView.setOnQueryTextListener((SearchView.OnQueryTextListener) this);
+
+
+    }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -184,6 +209,18 @@ public class TrainingsTraineesFragment extends Fragment implements TraineeRecycl
     public void onDetach() {
         super.onDetach();
         mListener = null;
+    }
+
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+        return false;
+    }
+
+    @Override
+    public boolean onQueryTextChange(String string) {
+       rAdapter.getFilter().filter(string);
+        //MainActivity.this.adapter.getFilter().filter(cs);
+        return false;
     }
 
     public interface OnFragmentInteractionListener {

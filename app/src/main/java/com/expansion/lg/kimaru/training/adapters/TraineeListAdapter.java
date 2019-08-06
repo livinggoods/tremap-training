@@ -1,25 +1,34 @@
 package com.expansion.lg.kimaru.training.adapters;
 
+import android.app.Activity;
 import android.content.Context;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.support.v7.widget.RecyclerView.Adapter;
+import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.HapticFeedbackConstants;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.expansion.lg.kimaru.training.objs.TrainingTrainee;
 import com.expansion.lg.kimaru.training.R;
 import com.expansion.lg.kimaru.training.utils.DisplayDate;
 import com.expansion.lg.kimaru.training.utils.FlipAnimator;
 
+import org.json.JSONException;
+
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -32,13 +41,48 @@ import java.util.List;
  * @web gakuu.co.ke
  */
 
-public class TraineeListAdapter extends Adapter<TraineeListAdapter.ListHolder>{
+public class TraineeListAdapter extends RecyclerView.Adapter<TraineeListAdapter.ListHolder> implements Filterable {
     private Context context;
     private List<TrainingTrainee> trainees;
     private TrainingTraineeListAdapterListener listener;
     private SparseBooleanArray selectedItems, selectedItemsIndex;
     private boolean reverseAllActions = false;
     private static int currentSelectedIndex = -1;
+
+    private List<TrainingTrainee> originalList;
+
+    //Start of filterable
+    private List<TrainingTrainee> traineesFull;
+
+//    TraineeListAdapter(List<TrainingTrainee> trainees){
+//        this.trainees = trainees;
+//        traineesFull = new ArrayList<>(trainees);
+//
+//    }
+
+
+//    public static ArrayList<String> filteredList;
+//    public static ArrayList<String> originalList;
+//
+//
+//    public TraineeListAdapter(Context context, ArrayList<String> originalList) {
+//        this.context = context;
+//        //this.inflater = LayoutInflater.from(context);
+//        this.originalList = originalList;
+//        this.filteredList=originalList;
+//
+//    }
+//
+//
+//    public int getCount() {
+//        return filteredList.size();//note the change
+//    }
+//
+//    public Object getItem(int position) {
+//        return filteredList.get(position);//note the change
+//    }
+
+    //End of filterable
 
     public class ListHolder extends ViewHolder implements View.OnLongClickListener{
         public TextView title, subTitle, message, iconText, timestamp;
@@ -73,12 +117,14 @@ public class TraineeListAdapter extends Adapter<TraineeListAdapter.ListHolder>{
             return true;
         }
     }
-    public TraineeListAdapter(Context context, List<TrainingTrainee> trainingTrainees, TrainingTraineeListAdapterListener listener){
+    public TraineeListAdapter(Context context, List<TrainingTrainee> trainees, TrainingTraineeListAdapterListener listener){
         this.context = context;
-        this.trainees = trainingTrainees;
+        this.trainees = trainees;
         this.listener = listener;
         selectedItems = new SparseBooleanArray();
         selectedItemsIndex = new SparseBooleanArray();
+        traineesFull = new ArrayList<>(trainees);
+        originalList = trainees;
     }
 
     @Override
@@ -261,4 +307,116 @@ public class TraineeListAdapter extends Adapter<TraineeListAdapter.ListHolder>{
         void onMessageRowClicked(int position);
         void onRowLongClicked(int position);
     }
+
+
+    //getFilter() to filter the results on the ListAdapter
+//    @Override
+//    public Filter getFilter() {
+//        Filter filter = new Filter() {
+//            @Override
+//            protected FilterResults performFiltering(CharSequence constraint) {
+//                FilterResults results = new FilterResults();
+//                ArrayList<String> FilteredList= new ArrayList<String>();
+//                if (constraint == null || constraint.length() == 0) {
+//                    // No filter implemented we return all the list
+//                    results.values = OriginalList;
+//                    results.count = OriginalList.size();
+//                }
+//                else {
+//                    for (int i = 0; i < OriginalList.size(); i++) {
+//                        String data = OriginalList.get(i);
+//                        if (data.toLowerCase().contains(constraint.toString()))  {
+//                            FilteredList.add(data);
+//                        }
+//                    }
+//                    results.values = FilteredList;
+//                    results.count = FilteredList.size();
+//                }
+//
+//                return results;
+//            }
+//
+//            @Override
+//            protected void publishResults(CharSequence constraint, FilterResults results) {
+//                temporarylist=(ArrayList<String>)results.values;
+//                notifyDataSetChanged();
+//            }
+//        };
+//
+//        return filter;
+//    }
+
+
+//    @Override
+//    public Filter getFilter() {
+//        return new Filter() {
+//            @Override
+//            protected FilterResults performFiltering(CharSequence constraint) {
+//                FilterResults results = new FilterResults();
+//
+//                if (constraint == null || constraint.length() == 0) {
+//                    //no constraint given, just return all the data. (no search)
+//                    results.count = originalList.size();
+//                    results.values = originalList;
+//                } else {//do the search
+//                    List<String> resultsData = new ArrayList<>();
+//                    String searchStr = constraint.toString().toUpperCase();
+//                    for (String s : originalList)
+//                        if (s.toUpperCase().contains(searchStr)) resultsData.add(s);
+//                    results.count = resultsData.size();
+//                    results.values = resultsData;
+//                }
+//
+//                return results;
+//            }
+//
+//            @Override
+//            protected void publishResults(CharSequence constraint, FilterResults results) {
+//                filteredList = (ArrayList<String>) results.values;
+//                notifyDataSetChanged();
+//            }
+//        };
+//    }
+    @Override
+    public Filter getFilter() {
+        return traineeFilter;
+    }
+
+    private Filter traineeFilter = new Filter() {
+        @Override
+        protected FilterResults performFiltering(CharSequence constraint) {
+            List<TrainingTrainee> filteredList = new ArrayList<>(); //new list containing only filtered items
+            if (constraint == null){
+                filteredList.addAll(originalList);
+            } else if (constraint.toString().trim().equals("")) {
+                filteredList.addAll(originalList);
+            } else {
+                String filterPattern = constraint.toString().toLowerCase().trim();
+                for (TrainingTrainee item : originalList){
+                    String name = "";
+                    try {
+                        name = item.getRegistration().getString("name").toLowerCase();
+                    } catch (JSONException ex)  {
+                        ex.printStackTrace();
+                    }
+                    if (name.contains(filterPattern)){
+                        filteredList.add(item);
+                    }
+                }
+            }
+
+            FilterResults results = new FilterResults();
+            results.values = filteredList;
+
+            return  results;
+        }
+
+        @Override
+        protected void publishResults(CharSequence constraint, FilterResults results) {
+            trainees.clear();
+            trainees.addAll((List<? extends TrainingTrainee>) results.values);
+            notifyDataSetChanged();
+        }
+    };
+
 }
