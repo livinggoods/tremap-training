@@ -392,6 +392,7 @@ public class TraineeListAdapter extends RecyclerView.Adapter<TraineeListAdapter.
                 filteredList.addAll(originalList);
             } else {
                 String filterPattern = constraint.toString().toLowerCase().trim();
+                Log.e("Query", filterPattern);
                 for (TrainingTrainee item : originalList){
                     String name = "";
                     try {
@@ -399,7 +400,8 @@ public class TraineeListAdapter extends RecyclerView.Adapter<TraineeListAdapter.
                     } catch (JSONException ex)  {
                         ex.printStackTrace();
                     }
-                    if (name.contains(filterPattern)){
+                    Log.e("Name", name);
+                    if (name.startsWith(filterPattern)){
                         filteredList.add(item);
                     }
                 }
@@ -413,8 +415,7 @@ public class TraineeListAdapter extends RecyclerView.Adapter<TraineeListAdapter.
 
         @Override
         protected void publishResults(CharSequence constraint, FilterResults results) {
-            trainees.clear();
-            trainees.addAll((List<? extends TrainingTrainee>) results.values);
+            trainees = (ArrayList<TrainingTrainee>) results.values;
             notifyDataSetChanged();
         }
     };
