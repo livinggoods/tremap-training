@@ -22,6 +22,7 @@ import android.support.v7.view.ActionMode;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -29,8 +30,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.FrameLayout;
-import android.widget.SearchView;
+//import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -89,8 +91,18 @@ public class TrainingsTraineesFragment extends Fragment implements TraineeRecycl
         searchView.setSearchableInfo(
                 searchManager.getSearchableInfo(getActivity().getComponentName()));
 
-        searchView.setSubmitButtonEnabled(true);
+        searchView.setSubmitButtonEnabled(false);
+        final EditText searchEditText = (EditText) searchView.findViewById(android.support.v7.appcompat.R.id.search_src_text);
+
+
+        //searchEditText.setImeOptions();
         searchView.setOnQueryTextListener((SearchView.OnQueryTextListener) this);
+
+
+//        SearchManager searchManager =
+//                (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+//        android.support.v7.widget.SearchView searchView =
+//                (android.support.v7.widget.SearchView) menu.findItem(R.id.search).getActionView();
 
 
     }

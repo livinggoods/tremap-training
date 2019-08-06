@@ -49,38 +49,9 @@ public class TraineeListAdapter extends RecyclerView.Adapter<TraineeListAdapter.
     private boolean reverseAllActions = false;
     private static int currentSelectedIndex = -1;
 
-    private List<TrainingTrainee> originalList;
-
     //Start of filterable
+    private List<TrainingTrainee> originalList;
     private List<TrainingTrainee> traineesFull;
-
-//    TraineeListAdapter(List<TrainingTrainee> trainees){
-//        this.trainees = trainees;
-//        traineesFull = new ArrayList<>(trainees);
-//
-//    }
-
-
-//    public static ArrayList<String> filteredList;
-//    public static ArrayList<String> originalList;
-//
-//
-//    public TraineeListAdapter(Context context, ArrayList<String> originalList) {
-//        this.context = context;
-//        //this.inflater = LayoutInflater.from(context);
-//        this.originalList = originalList;
-//        this.filteredList=originalList;
-//
-//    }
-//
-//
-//    public int getCount() {
-//        return filteredList.size();//note the change
-//    }
-//
-//    public Object getItem(int position) {
-//        return filteredList.get(position);//note the change
-//    }
 
     //End of filterable
 
