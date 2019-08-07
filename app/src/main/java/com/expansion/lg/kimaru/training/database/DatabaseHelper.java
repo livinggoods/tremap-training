@@ -103,6 +103,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DATE_ADMINISTERED = "date_administered";
     private static final String EXAM_ID = "exam_id";
     private static final String TITLE = "title";
+    private static final String TRAINEE_SYNCED = "trainee_synced";
     private static final String CERTIFICATION_TYPE_ID = "certification_type_id";
     // training venue
     private static final String NAME = "name";
@@ -164,6 +165,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             + QUESTION_ID + integer_field + ", "
             + QUESTION_SCORE + integer_field + ", "
             + TRAINEE_ID + varchar_field + ", "
+            + TRAINEE_SYNCED + varchar_field + ", "
             + TRAINING_EXAM_ID + varchar_field + "); ";
 
     private static final String CREATE_TABLE_TRAINING ="CREATE TABLE " + TABLE_TRAINING + "("
@@ -417,7 +419,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion){
+        if (oldVersion < 2) {
+            runMigrationsV2(db);
+        }
+    }
 
+    private void runMigrationsV2 (SQLiteDatabase db) {
+        // Added a synced filed.
+        db.execSQL("ALTER TABLE EXAM_RESULTS ADD COLUMN TRAINEE_SYNCED VARCHAR DEFAULT 0;");
     }
 
     private String [] trainingColumns = new String[]{ID, TRAINING_NAME, COUNTRY, COUNTY_ID, LOCATION_ID,
@@ -738,7 +747,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return exist;
 
     }
-
+    public int ifTrainingExamSynced() {
+        SQLiteDatabase db = getWritableDatabase();
+        Cursor cur = db.rawQuery("SELECT COUNT(*) FROM " + TABLE_EXAM_RESULTS , null);
+        int count = cur.getCount();
+        cur.close();
+        return count;
+    }
     public TrainingVenue getTrainingVenueById(String trainingVenueId){
         SQLiteDatabase db = getWritableDatabase();
         String whereClause = ID +" = ?";

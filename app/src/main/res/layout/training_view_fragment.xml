@@ -223,6 +223,11 @@
                     android:layout_height="wrap_content"
                     android:paddingLeft="20dp"
                     android:text="Not set"/>
+                <Button
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:text="Check data sync"
+                    android:id="@+id/syncercheck"/>
             </LinearLayout>
             <!--<LinearLayout
                 android:layout_marginTop="25dp"
