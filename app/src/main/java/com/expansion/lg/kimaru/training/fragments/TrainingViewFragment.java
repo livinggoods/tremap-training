@@ -37,10 +37,18 @@ public class TrainingViewFragment extends Fragment implements  View.OnClickListe
     Training training = null;
 
     TextView trainingName, trainingTrainees, trainingClasses, trainingSessions, trainingAttendance,
-            trainingLeadTrainer;
-    LinearLayout traineesButton, sessionsButton, classesButton, trainingExamsView;
+            trainingLeadTrainer, tvSyncMsg;
+    LinearLayout traineesButton, sessionsButton, classesButton, trainingExamsView, layoutSync;
     ImageView trainingImage;
-    Button syncercheck;
+    Button btnSync;
+
+    DatabaseHelper db;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        db = new DatabaseHelper(getContext());
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState){
@@ -63,29 +71,44 @@ public class TrainingViewFragment extends Fragment implements  View.OnClickListe
         traineesButton = v.findViewById(R.id.traineesButton);
         sessionsButton = v.findViewById(R.id.sessionsButton);
         classesButton = v.findViewById(R.id.classesButton);
-        syncercheck=v.findViewById(R.id.syncercheck);
+
+        layoutSync = v.findViewById(R.id.layout_sync);
+        btnSync = v.findViewById(R.id.btn_sync_now);
+        tvSyncMsg = v.findViewById(R.id.tv_sync_msg);
+
+        int examResultOfflineCount = db.getOfflineRecordCount(DatabaseHelper.TABLE_EXAM_RESULTS);
+        layoutSync.setVisibility(examResultOfflineCount > 0 ? View.VISIBLE : View.GONE);
+        tvSyncMsg.setText(String.format("%d pending offline exam records", examResultOfflineCount));
+
         getTrainingDetailsFromApi();
         getTrainingExamsFromApi();
         syncExamResults();
 
         DatabaseHelper db = new DatabaseHelper(getContext());
-        syncercheck.setOnClickListener(new View.OnClickListener() {
+        btnSync.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                DatabaseHelper db = new DatabaseHelper(getContext());
+                new TrainingDataSync(getContext()).startPollNewTraineesTask();
 
-                int icount = db.ifTrainingExamSynced();
-                if(icount>0){
-                    //Toast.makeText(getContext(), "Data not yet synced"+icount, Toast.LENGTH_LONG).show();
-                    Snackbar.make(view, +icount+ " Data not synced", Snackbar.LENGTH_LONG)
-                            .setAction("Sync Now", null).show();
-                }
-//leave
-                else{
-                    Toast.makeText(getContext(), "Data Synced successfully", Toast.LENGTH_SHORT).show();
-                }
             }
         });
+//        syncercheck.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                DatabaseHelper db = new DatabaseHelper(getContext());
+//
+//                int icount = db.ifTrainingExamSynced();
+//                if(icount>0){
+//                    //Toast.makeText(getContext(), "Data not yet synced"+icount, Toast.LENGTH_LONG).show();
+//                    Snackbar.make(view, +icount+ " Data not synced", Snackbar.LENGTH_LONG)
+//                            .setAction("Sync Now", null).show();
+//                }
+////leave
+//                else{
+//                    Toast.makeText(getContext(), "Data Synced successfully", Toast.LENGTH_SHORT).show();
+//                }
+//            }
+//        });
         trainingName.setText(training.getTrainingName());
         trainingTrainees.setText(String.valueOf(db.getTrainingTraineesByTrainingId(training.getId()).size()));
         Integer m = db.getTrainingClassByTrainingId(training.getId()).size();
