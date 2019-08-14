@@ -30,9 +30,10 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.FrameLayout;
-//import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -53,6 +54,7 @@ import java.util.List;
 
 public class TrainingsTraineesFragment extends Fragment implements TraineeRecyclerItemTouchHelper.
         RecyclerItemTouchHelperListener, SearchView.OnQueryTextListener{
+
     private OnFragmentInteractionListener mListener;
     TextView textshow;
     FloatingActionButton fab;
@@ -64,6 +66,10 @@ public class TrainingsTraineesFragment extends Fragment implements TraineeRecycl
     private ActionMode actionMode;
 
     private FrameLayout frameLayout;
+
+    private EditText searchEditText;
+    private SearchView searchView;
+    int actionId;
 
     SessionManagement sessionManagement;
     Training training = null;
@@ -87,23 +93,36 @@ public class TrainingsTraineesFragment extends Fragment implements TraineeRecycl
 
         //Associate searchable configuration with the SearchView
         SearchManager searchManager = (SearchManager) getActivity().getSystemService(Context.SEARCH_SERVICE);
-        SearchView searchView = (SearchView) menu.findItem(R.id.search).getActionView();
+        searchView = (SearchView) menu.findItem(R.id.search).getActionView();
         searchView.setSearchableInfo(
                 searchManager.getSearchableInfo(getActivity().getComponentName()));
 
         searchView.setSubmitButtonEnabled(false);
-        final EditText searchEditText = (EditText) searchView.findViewById(android.support.v7.appcompat.R.id.search_src_text);
 
-
-        //searchEditText.setImeOptions();
         searchView.setOnQueryTextListener((SearchView.OnQueryTextListener) this);
 
+        searchEditText = (EditText) searchView.findViewById(android.support.v7.appcompat.R.id.search_src_text);
 
-//        SearchManager searchManager =
-//                (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-//        android.support.v7.widget.SearchView searchView =
-//                (android.support.v7.widget.SearchView) menu.findItem(R.id.search).getActionView();
+        onEditorAction(actionId);
 
+
+    }
+
+    public boolean onEditorAction(int actionId){
+        if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+            hideSoftKeyboard();
+            return true;
+        }
+        return false;
+
+    }
+
+
+    public void hideSoftKeyboard() {
+        //searchEditText = (EditText) searchView.findViewById(android.support.v7.appcompat.R.id.search_src_text);
+        InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(
+                Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(searchEditText.getWindowToken(), 0);
 
     }
 
