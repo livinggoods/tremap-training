@@ -4,6 +4,7 @@ package com.expansion.lg.kimaru.training.fragments;
 import android.os.Bundle;
 import android.support.annotation.ColorInt;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -13,9 +14,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
@@ -23,6 +26,7 @@ import com.expansion.lg.kimaru.training.R;
 import com.expansion.lg.kimaru.training.activity.MainActivity;
 import com.expansion.lg.kimaru.training.database.DatabaseHelper;
 import com.expansion.lg.kimaru.training.network.TrainingDataSync;
+import com.expansion.lg.kimaru.training.network.UploadCertificationResultsTask;
 import com.expansion.lg.kimaru.training.objs.Training;
 import com.expansion.lg.kimaru.training.receivers.ConnectivityReceiver;
 
@@ -34,10 +38,18 @@ public class TrainingViewFragment extends Fragment implements  View.OnClickListe
     Training training = null;
 
     TextView trainingName, trainingTrainees, trainingClasses, trainingSessions, trainingAttendance,
-            trainingLeadTrainer;
-    LinearLayout traineesButton, sessionsButton, classesButton, trainingExamsView;
+            trainingLeadTrainer, tvSyncMsg;
+    LinearLayout traineesButton, sessionsButton, classesButton, trainingExamsView, layoutSync;
     ImageView trainingImage;
+    Button btnSync;
 
+    DatabaseHelper db;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        db = new DatabaseHelper(getContext());
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState){
@@ -52,19 +64,32 @@ public class TrainingViewFragment extends Fragment implements  View.OnClickListe
         trainingImage = v.findViewById(R.id.trainingImage);
         trainingExamsView = v.findViewById(R.id.trainingExamsView);
 
-        Log.d("TREMAP", "{}{}{}{}{}{}{}{}{");
-        Log.d("TREMAP", DatabaseHelper.CREATE_TABLE_TRAINING_EXAM);
-        Log.d("TREMAP", "{}{}{}{}{}{}{}{}{");
-
 
         traineesButton = v.findViewById(R.id.traineesButton);
         sessionsButton = v.findViewById(R.id.sessionsButton);
         classesButton = v.findViewById(R.id.classesButton);
+
+        layoutSync = v.findViewById(R.id.layout_sync);
+        btnSync = v.findViewById(R.id.btn_sync_now);
+        tvSyncMsg = v.findViewById(R.id.tv_sync_msg);
+
+        int examResultOfflineCount = db.getOfflineRecordCount(DatabaseHelper.TABLE_EXAM_RESULTS);
+        layoutSync.setVisibility(examResultOfflineCount > 0 ? View.VISIBLE : View.GONE);
+        tvSyncMsg.setText(String.format("%d pending offline exam records", examResultOfflineCount));
+
         getTrainingDetailsFromApi();
         getTrainingExamsFromApi();
         syncExamResults();
 
         DatabaseHelper db = new DatabaseHelper(getContext());
+        btnSync.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                new UploadCertificationResultsTask(getContext()).execute(training.getId());
+
+            }
+        });
+
         trainingName.setText(training.getTrainingName());
         trainingTrainees.setText(String.valueOf(db.getTrainingTraineesByTrainingId(training.getId()).size()));
         Integer m = db.getTrainingClassByTrainingId(training.getId()).size();
@@ -198,6 +223,7 @@ public class TrainingViewFragment extends Fragment implements  View.OnClickListe
             ex.printStackTrace();
         }
     }
+
 
     private boolean isConnected(){
         return ConnectivityReceiver.isConnected();

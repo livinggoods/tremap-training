@@ -26,7 +26,9 @@ import com.expansion.lg.kimaru.training.objs.TrainingTrainee;
 import com.expansion.lg.kimaru.training.objs.TrainingTrainer;
 import com.expansion.lg.kimaru.training.objs.TrainingVenue;
 import com.expansion.lg.kimaru.training.objs.User;
+import com.expansion.lg.kimaru.training.utils.Constants;
 import com.expansion.lg.kimaru.training.utils.DisplayDate;
+import com.expansion.lg.kimaru.training.utils.UtilFunctions;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -43,7 +45,7 @@ import java.util.UUID;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String LOG = "DatabaseHelper";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
     private static final String DATABASE_NAME = "training.db";
 
     private static String varchar_field = " varchar(512) ";
@@ -70,7 +72,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String TABLE_COHORT = "cohort";
     private static final String TABLE_TRAINEE_STATUS = "trainee_status";
     private static final String TABLE_TRAINING_EXAM = "training_exams";
-    private static final String TABLE_EXAM_RESULTS = "exam_results";
+    public static final String TABLE_EXAM_RESULTS = "exam_results";
 
     // fields for Training
     private static final String ID = "id";
@@ -103,6 +105,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DATE_ADMINISTERED = "date_administered";
     private static final String EXAM_ID = "exam_id";
     private static final String TITLE = "title";
+    private static final String SYNCED = "synced";
     private static final String CERTIFICATION_TYPE_ID = "certification_type_id";
     // training venue
     private static final String NAME = "name";
@@ -164,6 +167,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             + QUESTION_ID + integer_field + ", "
             + QUESTION_SCORE + integer_field + ", "
             + TRAINEE_ID + varchar_field + ", "
+            + SYNCED + integer_field + ", "
             + TRAINING_EXAM_ID + varchar_field + "); ";
 
     private static final String CREATE_TABLE_TRAINING ="CREATE TABLE " + TABLE_TRAINING + "("
@@ -411,13 +415,27 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             db.execSQL(CREATE_TABLE_TRAINEE_STATUS);
             db.execSQL(CREATE_EXAM_RESULTS_TABLE);
         }catch (Exception e){
+            e.printStackTrace();
             Log.d("TREMAPDB", e.getMessage());
         }
 
     }
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion){
+        if (oldVersion < 2) {
+            runMigrationsV2(db);
+        }
+    }
 
+    /**
+     * Run migrations for version 2
+     * Add
+     * @param db
+     */
+    private void runMigrationsV2 (SQLiteDatabase db) {
+        if (!UtilFunctions.isColumnExists(db, TABLE_EXAM_RESULTS, SYNCED)) {
+            db.execSQL("ALTER TABLE " + TABLE_EXAM_RESULTS + " ADD COLUMN "+ SYNCED +" VARCHAR DEFAULT 0;");
+        }
     }
 
     private String [] trainingColumns = new String[]{ID, TRAINING_NAME, COUNTRY, COUNTY_ID, LOCATION_ID,
@@ -462,7 +480,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             CREATED_BY, DATE_CREATED, PASSMARK, TRAINING_ID, COUNTRY, ARCHIVED, TITLE, CLOUD_EXAM,
             EXAM_STATUS, QUESTIONS, EXAM_STATUS_ID, CERTIFICATION_TYPE_ID};
     private String[] trainingExamResultColumns = new String[] {ID, ARCHIVED, CHOICE_ID, COUNTRY, ANSWER,
-            CREATED_BY, DATE_CREATED, QUESTION_ID, QUESTION_SCORE, TRAINEE_ID, TRAINING_EXAM_ID};
+            CREATED_BY, DATE_CREATED, QUESTION_ID, QUESTION_SCORE, TRAINEE_ID, TRAINING_EXAM_ID, SYNCED};
 
     /**
      * **************************************
@@ -739,6 +757,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     }
 
+    /**
+     * Some good documentation goes here
+     * @return
+     */
+    public int getOfflineRecordCount(String tableName) {
+        SQLiteDatabase db = getReadableDatabase();
+        String whereClause = SYNCED + "= ?";
+        String whereArgs[] = new String[] { Constants.NOT_SYNCED + "" };
+        Cursor cursor = db.query(tableName, trainingExamResultColumns, whereClause,
+                whereArgs, null, null, null, null);
+
+        int offlineCount = cursor.getCount();
+        cursor.close();
+        return offlineCount;
+    }
     public TrainingVenue getTrainingVenueById(String trainingVenueId){
         SQLiteDatabase db = getWritableDatabase();
         String whereClause = ID +" = ?";
@@ -2782,7 +2815,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         result.setQuestionScore(cursor.getInt(cursor.getColumnIndex(QUESTION_SCORE)));
         result.setTraineeId(cursor.getString(cursor.getColumnIndex(TRAINEE_ID)));
         result.setTrainingExamId(cursor.getInt(cursor.getColumnIndex(TRAINING_EXAM_ID)));
-
+        result.setSynced(cursor.getInt(cursor.getColumnIndex(SYNCED)));
         return result;
     }
 
@@ -2868,6 +2901,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
 
+
+
     public List<TrainingExamResult> getTrainingExamResultByTrainee(String traineeId){
         SQLiteDatabase db = getWritableDatabase();
         String whereClause = TRAINEE_ID +" = ?";
@@ -2885,11 +2920,34 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return trainingExamResults;
     }
 
+
+    /***
+     * Returns a list of all offline exam results records
+     * @return
+     */
+    public List<TrainingExamResult> getOfflineTrainingExamResults(){
+        SQLiteDatabase db = getWritableDatabase();
+        String whereClause = SYNCED +"= ? ";
+        String[] whereArgs = new String[] {
+                Constants.NOT_SYNCED+""
+        };
+        Cursor cursor=db.query(TABLE_EXAM_RESULTS, trainingExamResultColumns, whereClause,
+                whereArgs,null,null,null,null);
+        List<TrainingExamResult> trainingExamResults = new ArrayList<>();
+        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()){
+            TrainingExamResult result = cursorToTrainingExamResult(cursor);
+            trainingExamResults.add(result);
+        }
+        cursor.close();
+        return trainingExamResults;
+    }
+
     public List<TrainingExamResult> getTrainingExamResultByExam(String examId){
         SQLiteDatabase db = getWritableDatabase();
-        String whereClause = TRAINING_EXAM_ID +" = ?";
+        String whereClause = TRAINING_EXAM_ID +" = ? AND "+ SYNCED +"=1";
         String[] whereArgs = new String[] {
                 examId,
+                Constants.NOT_SYNCED+""
         };
         Cursor cursor=db.query(TABLE_EXAM_RESULTS, trainingExamResultColumns, whereClause,
                 whereArgs,TRAINEE_ID,null,null,null);
@@ -3007,5 +3065,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(copyDataSQLToNewTable);
         db.execSQL(dropOldTable);
         db.close();
+    }
+
+    /**
+     * Updates sync status for an exam results record
+     * @param id
+     * @param status
+     */
+    public void updateSyncStatus(String id, int status) {
+        SQLiteDatabase db = getWritableDatabase();
+        db.execSQL("UPDATE "+TABLE_EXAM_RESULTS+" SET SYNCED = " + status + " WHERE id = '" + id + "'");
     }
 }

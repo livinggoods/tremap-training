@@ -13,6 +13,9 @@ package com.expansion.lg.kimaru.training.utils;
 public class Constants {
     public static final int SPLASH_DELAY = 5000;
     public static final String EMPTY = "";
+    public static final int STATUS_SYNCED = 1;
+    public static final int NOT_SYNCED = 0;
+
 
     //fonts
     public static final String STREATWEAR_FONT = "fonts/streatwear.otf";
