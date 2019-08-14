@@ -92,23 +92,7 @@ public class TrainingViewFragment extends Fragment implements  View.OnClickListe
 
             }
         });
-//        syncercheck.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                DatabaseHelper db = new DatabaseHelper(getContext());
-//
-//                int icount = db.ifTrainingExamSynced();
-//                if(icount>0){
-//                    //Toast.makeText(getContext(), "Data not yet synced"+icount, Toast.LENGTH_LONG).show();
-//                    Snackbar.make(view, +icount+ " Data not synced", Snackbar.LENGTH_LONG)
-//                            .setAction("Sync Now", null).show();
-//                }
-////leave
-//                else{
-//                    Toast.makeText(getContext(), "Data Synced successfully", Toast.LENGTH_SHORT).show();
-//                }
-//            }
-//        });
+
         trainingName.setText(training.getTrainingName());
         trainingTrainees.setText(String.valueOf(db.getTrainingTraineesByTrainingId(training.getId()).size()));
         Integer m = db.getTrainingClassByTrainingId(training.getId()).size();

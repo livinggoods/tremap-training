@@ -764,11 +764,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         int offlineCount = cursor.getCount();
         cursor.close();
         return offlineCount;
-//        Cursor cur = db.rawQuery("SELECT COUNT(*) FROM " + TABLE_EXAM_RESULTS+ " WHERE "+SYNCED+" = '"
-//                + 0 + "'",  null);
-//        int count = cur.getCount();
-//        cur.close();
-//        return count;
     }
     public TrainingVenue getTrainingVenueById(String trainingVenueId){
         SQLiteDatabase db = getWritableDatabase();
