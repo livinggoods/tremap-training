@@ -2,13 +2,17 @@ package com.expansion.lg.kimaru.training.adapters;
 
 import android.content.Context;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.support.v7.widget.RecyclerView.Adapter;
+import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.HapticFeedbackConstants;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -18,6 +22,8 @@ import com.expansion.lg.kimaru.training.objs.TrainingTrainee;
 import com.expansion.lg.kimaru.training.R;
 import com.expansion.lg.kimaru.training.utils.DisplayDate;
 import com.expansion.lg.kimaru.training.utils.FlipAnimator;
+
+import org.json.JSONException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,13 +38,18 @@ import java.util.List;
  * @web gakuu.co.ke
  */
 
-public class TraineeListAdapter extends Adapter<TraineeListAdapter.ListHolder>{
+public class TraineeListAdapter extends RecyclerView.Adapter<TraineeListAdapter.ListHolder> implements Filterable {
     private Context context;
     private List<TrainingTrainee> trainees;
     private TrainingTraineeListAdapterListener listener;
     private SparseBooleanArray selectedItems, selectedItemsIndex;
     private boolean reverseAllActions = false;
     private static int currentSelectedIndex = -1;
+
+    //Start of filterable
+    private List<TrainingTrainee> originalList;
+    private List<TrainingTrainee> traineesFull;
+    //End of filterable
 
     public class ListHolder extends ViewHolder implements View.OnLongClickListener{
         public TextView title, subTitle, message, iconText, timestamp;
@@ -73,12 +84,14 @@ public class TraineeListAdapter extends Adapter<TraineeListAdapter.ListHolder>{
             return true;
         }
     }
-    public TraineeListAdapter(Context context, List<TrainingTrainee> trainingTrainees, TrainingTraineeListAdapterListener listener){
+    public TraineeListAdapter(Context context, List<TrainingTrainee> trainees, TrainingTraineeListAdapterListener listener){
         this.context = context;
-        this.trainees = trainingTrainees;
+        this.trainees = trainees;
         this.listener = listener;
         selectedItems = new SparseBooleanArray();
         selectedItemsIndex = new SparseBooleanArray();
+        traineesFull = new ArrayList<>(trainees);
+        originalList = trainees;
     }
 
     @Override
@@ -261,4 +274,50 @@ public class TraineeListAdapter extends Adapter<TraineeListAdapter.ListHolder>{
         void onMessageRowClicked(int position);
         void onRowLongClicked(int position);
     }
+
+
+    @Override
+    public Filter getFilter() {
+        return traineeFilter;
+    }
+
+    private Filter traineeFilter = new Filter() {
+        @Override
+        protected FilterResults performFiltering(CharSequence constraint) {
+            //new list containing only filtered items
+            List<TrainingTrainee> filteredList = new ArrayList<>();
+            if (constraint == null){
+                filteredList.addAll(originalList);
+            } else if (constraint.toString().trim().equals("")) {
+                filteredList.addAll(originalList);
+            } else {
+                String filterPattern = constraint.toString().toLowerCase().trim();
+                Log.e("Query", filterPattern);
+                for (TrainingTrainee item : originalList){
+                    String name = "";
+                    try {
+                        name = item.getRegistration().getString("name").toLowerCase();
+                    } catch (JSONException ex)  {
+                        ex.printStackTrace();
+                    }
+                    Log.e("Name", name);
+                    if (name.startsWith(filterPattern)){
+                        filteredList.add(item);
+                    }
+                }
+            }
+
+            FilterResults results = new FilterResults();
+            results.values = filteredList;
+
+            return  results;
+        }
+
+        @Override
+        protected void publishResults(CharSequence constraint, FilterResults results) {
+            trainees = (ArrayList<TrainingTrainee>) results.values;
+            notifyDataSetChanged();
+        }
+    };
+
 }

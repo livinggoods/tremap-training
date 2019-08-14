@@ -146,4 +146,8 @@
     <string name="userid">userid</string>
     <string name="country">country</string>
 
+
+    <!-- Trainee Search -->
+    <string name="search_hint">Search</string>
+
 </resources>

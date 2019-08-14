@@ -4,6 +4,7 @@ package com.expansion.lg.kimaru.training.fragments;
  * Created by kimaru on 3/11/17.
  */
 
+import android.app.SearchManager;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
@@ -21,12 +22,17 @@ import android.support.v7.view.ActionMode;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -46,7 +52,9 @@ import com.expansion.lg.kimaru.training.utils.SessionManagement;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TrainingsTraineesFragment extends Fragment implements TraineeRecyclerItemTouchHelper.RecyclerItemTouchHelperListener {
+public class TrainingsTraineesFragment extends Fragment implements TraineeRecyclerItemTouchHelper.
+        RecyclerItemTouchHelperListener, SearchView.OnQueryTextListener{
+
     private OnFragmentInteractionListener mListener;
     TextView textshow;
     FloatingActionButton fab;
@@ -59,9 +67,14 @@ public class TrainingsTraineesFragment extends Fragment implements TraineeRecycl
 
     private FrameLayout frameLayout;
 
+    private EditText searchEditText;
+    private SearchView searchView;
+    int actionId;
+
     SessionManagement sessionManagement;
     Training training = null;
     TrainingClass trainingClass = null;
+
 
     public TrainingsTraineesFragment() {}
 
@@ -70,6 +83,49 @@ public class TrainingsTraineesFragment extends Fragment implements TraineeRecycl
         setHasOptionsMenu(true);
         super.onCreate(savedInstanceState);
     }
+
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater = getActivity().getMenuInflater();
+        inflater.inflate(R.menu.options_menu, menu);
+        super.onCreateOptionsMenu(menu,inflater);
+
+        //Associate searchable configuration with the SearchView
+        SearchManager searchManager = (SearchManager) getActivity().getSystemService(Context.SEARCH_SERVICE);
+        searchView = (SearchView) menu.findItem(R.id.search).getActionView();
+        searchView.setSearchableInfo(
+                searchManager.getSearchableInfo(getActivity().getComponentName()));
+
+        searchView.setSubmitButtonEnabled(false);
+
+        searchView.setOnQueryTextListener((SearchView.OnQueryTextListener) this);
+
+        searchEditText = (EditText) searchView.findViewById(android.support.v7.appcompat.R.id.search_src_text);
+
+        onEditorAction(actionId);
+
+
+    }
+
+    public boolean onEditorAction(int actionId){
+        if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+            hideSoftKeyboard();
+            return true;
+        }
+        return false;
+
+    }
+
+
+    public void hideSoftKeyboard() {
+        //searchEditText = (EditText) searchView.findViewById(android.support.v7.appcompat.R.id.search_src_text);
+        InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(
+                Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(searchEditText.getWindowToken(), 0);
+
+    }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -184,6 +240,18 @@ public class TrainingsTraineesFragment extends Fragment implements TraineeRecycl
     public void onDetach() {
         super.onDetach();
         mListener = null;
+    }
+
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+        return false;
+    }
+
+    @Override
+    public boolean onQueryTextChange(String string) {
+       rAdapter.getFilter().filter(string);
+        //MainActivity.this.adapter.getFilter().filter(cs);
+        return false;
     }
 
     public interface OnFragmentInteractionListener {
