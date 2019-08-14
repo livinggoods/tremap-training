@@ -35,6 +35,7 @@ public class TrainingDataSync {
     DatabaseHelper databaseHelper;
     SessionManagement session;
 
+
     public TrainingDataSync(Context context){
         this.context = context;
         this.databaseHelper = new DatabaseHelper(context);
@@ -73,7 +74,7 @@ public class TrainingDataSync {
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        new UploadCertificationsResults().execute(trainingId);
+                        new UploadCertificationResultsTask(context).execute(trainingId);
                     }
                 });
             }
@@ -139,7 +140,7 @@ public class TrainingDataSync {
         };
         timer.schedule(getTrainingTraineesTask, 0, 60*500 * 1); //every 30 minutes
     }
-    private class syncTrainingTrainees extends AsyncTask<Void, Void, Void> {
+    public class syncTrainingTrainees extends AsyncTask<Void, Void, Void> {
         @Override
         protected void onPreExecute(){
             super.onPreExecute();
@@ -469,57 +470,6 @@ public class TrainingDataSync {
             String syncResults = syncClient(json,
                     session.getUploadSessionAttendanceEndpoint()+"/"+trainingId);
         }catch (Exception e){}
-    }
-
-    private class UploadCertificationsResults extends AsyncTask<String, Void, String> {
-
-        @Override
-        protected String doInBackground(String... strings) {
-
-            String trainingId = strings[0];
-            DatabaseHelper db = new DatabaseHelper(context);
-            String endpoint = session.getApiUrl() + "training/exam/result/save";
-
-            List<TrainingExam> exams = db.getTrainingExamsByTrainingId(trainingId);
-
-            try {
-
-                JSONArray params = new JSONArray();
-                for (TrainingExam exam: exams) {
-                    if (exam.getCertificationTypeId() > 0) {
-                        List<TrainingExamResult> results = db.getTrainingExamResultsByExam(exam.getId().toString());
-                        for (TrainingExamResult result: results) {
-                            JSONObject param = new JSONObject();
-
-
-                            param.put("training_exam_id", result.getTrainingExamId());
-                            param.put("trainee_id", result.getTraineeId());
-                            param.put("question_id", result.getQuestionId());
-                            param.put("question_score", result.getQuestionScore());
-                            param.put("country", result.getCountry());
-                            param.put("answer", result.getAnswer());
-                            param.put("choice_id", result.getChoiceId());
-                            param.put("id", result.getId());
-
-                            params.put(param);
-                        }
-
-                    }
-                }
-
-                AsyncHttpPost p = new AsyncHttpPost(endpoint);
-                Log.e("Tremap", params.toString());
-                p.setBody(new JSONArrayBody(params));
-                JSONObject ret = AsyncHttpClient.getDefaultInstance().executeJSONObject(p, null).get();
-                Log.e("RESULTS : Sync", ret.toString());
-
-            } catch (Exception ex) {
-
-                ex.printStackTrace();
-            }
-
-            return null;
-        }
     }
 
     private class uploadSessionAttendanceToUpstream extends AsyncTask<String, Void, String>{

@@ -16,6 +16,8 @@ public class TrainingExamResult {
     int choiceId, createdBy, questionId, questionScore, trainingExamId;
     int color = -1;
 
+    int synced;
+
     public TrainingExamResult() {
     }
 
@@ -114,5 +116,13 @@ public class TrainingExamResult {
 
     public void setColor(int color) {
         this.color = color;
+    }
+
+    public int getSynced() {
+        return synced;
+    }
+
+    public void setSynced(int synced) {
+        this.synced = synced;
     }
 }
