@@ -26,6 +26,7 @@ import com.expansion.lg.kimaru.training.R;
 import com.expansion.lg.kimaru.training.activity.MainActivity;
 import com.expansion.lg.kimaru.training.database.DatabaseHelper;
 import com.expansion.lg.kimaru.training.network.TrainingDataSync;
+import com.expansion.lg.kimaru.training.network.UploadCertificationResultsTask;
 import com.expansion.lg.kimaru.training.objs.Training;
 import com.expansion.lg.kimaru.training.receivers.ConnectivityReceiver;
 
@@ -63,10 +64,6 @@ public class TrainingViewFragment extends Fragment implements  View.OnClickListe
         trainingImage = v.findViewById(R.id.trainingImage);
         trainingExamsView = v.findViewById(R.id.trainingExamsView);
 
-        Log.d("TREMAP", "{}{}{}{}{}{}{}{}{");
-        Log.d("TREMAP", DatabaseHelper.CREATE_TABLE_TRAINING_EXAM);
-        Log.d("TREMAP", "{}{}{}{}{}{}{}{}{");
-
 
         traineesButton = v.findViewById(R.id.traineesButton);
         sessionsButton = v.findViewById(R.id.sessionsButton);
@@ -88,7 +85,7 @@ public class TrainingViewFragment extends Fragment implements  View.OnClickListe
         btnSync.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                new TrainingDataSync(getContext()).startPollNewTraineesTask();
+                new UploadCertificationResultsTask(getContext()).execute(training.getId());
 
             }
         });

@@ -28,6 +28,7 @@ import com.expansion.lg.kimaru.training.objs.TrainingVenue;
 import com.expansion.lg.kimaru.training.objs.User;
 import com.expansion.lg.kimaru.training.utils.Constants;
 import com.expansion.lg.kimaru.training.utils.DisplayDate;
+import com.expansion.lg.kimaru.training.utils.UtilFunctions;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -426,9 +427,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
+    /**
+     * Run migrations for version 2
+     * Add
+     * @param db
+     */
     private void runMigrationsV2 (SQLiteDatabase db) {
-        // Added a synced filed.
-        db.execSQL("ALTER TABLE " + TABLE_EXAM_RESULTS + " ADD COLUMN "+ SYNCED +" VARCHAR DEFAULT 0;");
+        if (!UtilFunctions.isColumnExists(db, TABLE_EXAM_RESULTS, SYNCED)) {
+            db.execSQL("ALTER TABLE " + TABLE_EXAM_RESULTS + " ADD COLUMN "+ SYNCED +" VARCHAR DEFAULT 0;");
+        }
     }
 
     private String [] trainingColumns = new String[]{ID, TRAINING_NAME, COUNTRY, COUNTY_ID, LOCATION_ID,
@@ -3059,8 +3066,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(dropOldTable);
         db.close();
     }
+
+    /**
+     * Updates sync status for an exam results record
+     * @param id
+     * @param status
+     */
     public void updateSyncStatus(String id, int status) {
         SQLiteDatabase db = getWritableDatabase();
-        db.execSQL("UPDATE "+TABLE_EXAM_RESULTS+" SET SYNCED = " + status + "WHERE id = '" + id + "'");
+        db.execSQL("UPDATE "+TABLE_EXAM_RESULTS+" SET SYNCED = " + status + " WHERE id = '" + id + "'");
     }
 }
