@@ -133,7 +133,8 @@
             android:layout_alignParentRight="true"
             android:textColor="@color/timestamp"
             android:textSize="@dimen/timestamp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:visibility="gone"/>
 
         <ImageView
             android:id="@+id/icon_star"

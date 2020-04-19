@@ -105,7 +105,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DATE_ADMINISTERED = "date_administered";
     private static final String EXAM_ID = "exam_id";
     private static final String TITLE = "title";
-    private static final String SYNCED = "synced";
+    public static final String SYNCED = "synced";
     private static final String CERTIFICATION_TYPE_ID = "certification_type_id";
     // training venue
     private static final String NAME = "name";
@@ -2856,6 +2856,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 result.setTrainingExamId(jsonObject.getInt(TRAINING_EXAM_ID));
             }
 
+            if (!jsonObject.isNull(SYNCED)) {
+                result.setSynced(jsonObject.getInt(SYNCED));
+            }
+
             this.addTrainingExamResult(result);
 
         }catch (Exception e){
@@ -2878,6 +2882,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         cv.put(TRAINEE_ID, exam.getTraineeId());
         cv.put(TRAINING_EXAM_ID, exam.getTrainingExamId());
         cv.put(ANSWER, exam.getAnswer());
+        cv.put(SYNCED, exam.getSynced());
+
 
         long id;
         if(trainingExamResultExists(exam)){
@@ -2932,7 +2938,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 Constants.NOT_SYNCED+""
         };
         Cursor cursor=db.query(TABLE_EXAM_RESULTS, trainingExamResultColumns, whereClause,
-                whereArgs,null,null,null,null);
+                whereArgs,null,null,null,Constants.PAGING + "");
         List<TrainingExamResult> trainingExamResults = new ArrayList<>();
         for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()){
             TrainingExamResult result = cursorToTrainingExamResult(cursor);
@@ -2944,10 +2950,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public List<TrainingExamResult> getTrainingExamResultByExam(String examId){
         SQLiteDatabase db = getWritableDatabase();
-        String whereClause = TRAINING_EXAM_ID +" = ? AND "+ SYNCED +"=1";
+        String whereClause = TRAINING_EXAM_ID +" = ?";
         String[] whereArgs = new String[] {
-                examId,
-                Constants.NOT_SYNCED+""
+                examId
         };
         Cursor cursor=db.query(TABLE_EXAM_RESULTS, trainingExamResultColumns, whereClause,
                 whereArgs,TRAINEE_ID,null,null,null);

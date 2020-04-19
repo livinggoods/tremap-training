@@ -39,9 +39,9 @@ public class TrainingViewFragment extends Fragment implements  View.OnClickListe
 
     TextView trainingName, trainingTrainees, trainingClasses, trainingSessions, trainingAttendance,
             trainingLeadTrainer, tvSyncMsg;
-    LinearLayout traineesButton, sessionsButton, classesButton, trainingExamsView, layoutSync;
+    LinearLayout traineesButton, sessionsButton, classesButton, layoutSync;
     ImageView trainingImage;
-    Button btnSync;
+    Button btnSync, trainingExamsView;
 
     DatabaseHelper db;
 

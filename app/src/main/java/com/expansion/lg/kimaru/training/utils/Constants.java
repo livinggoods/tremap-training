@@ -15,6 +15,7 @@ public class Constants {
     public static final String EMPTY = "";
     public static final int STATUS_SYNCED = 1;
     public static final int NOT_SYNCED = 0;
+    public static final int PAGING = 100;
 
 
     //fonts

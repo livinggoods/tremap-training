@@ -23,6 +23,7 @@ import com.expansion.lg.kimaru.training.objs.SessionAttendance;
 import com.expansion.lg.kimaru.training.objs.TrainingExam;
 import com.expansion.lg.kimaru.training.objs.TrainingExamResult;
 import com.expansion.lg.kimaru.training.objs.TrainingTrainee;
+import com.expansion.lg.kimaru.training.utils.Constants;
 import com.expansion.lg.kimaru.training.utils.DisplayDate;
 import com.gadiness.kimarudg.ui.alerts.SweetAlert.SweetAlertDialog;
 import com.google.gson.JsonArray;
@@ -161,9 +162,12 @@ public class TraineeDetailsFragment extends Fragment {
                         for (Integer x = 0; x < results.length(); x++){
                             JSONObject item = results.getJSONObject(x);
                             UUID uuid = UUID.randomUUID();
+                            if (item.isNull("id")) {
+                                item.put("id", uuid);
+                            }
                             item.put("archived", false);
-                            item.put("id", uuid.toString());
                             item.put("date_created", System.currentTimeMillis());
+                            item.put("synced", Constants.NOT_SYNCED);
 
                             db.trainingExamResultFromJson(item);
                         }

@@ -22,12 +22,18 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.SearchView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -64,11 +70,17 @@ public class TrainingsFragment extends Fragment implements TrainingRecyclerItemT
     private SwipeRefreshLayout swipeRefreshLayout;
     private ActionMode actionMode;
 
-    private FrameLayout frameLayout;
+    private LinearLayout frameLayout;
 
     SessionManagement sessionManagement;
 
-    public TrainingsFragment() {}
+    Spinner spFilterByCountry;
+    SearchView searchView;
+
+    String searchQuery = "";
+
+    public TrainingsFragment() {
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -84,14 +96,54 @@ public class TrainingsFragment extends Fragment implements TrainingRecyclerItemT
         MainActivity.backFragment = new HomeFragment();
 
         View v;
-        v =  inflater.inflate(R.layout.fragment_recycler, container, false);
+        v = inflater.inflate(R.layout.fragment_trainings, container, false);
         textshow = (TextView) v.findViewById(R.id.textShow);
+        textshow.setVisibility(View.GONE);
         sessionManagement = new SessionManagement(getContext());
+
+        spFilterByCountry = (Spinner) v.findViewById(R.id.sp_filter_by_country);
+        spFilterByCountry.setSelection(sessionManagement.getUserFilterByCountry());
+        spFilterByCountry.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                sessionManagement.setUserFilterByCountry(position);
+                getTrainings();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
+        searchView = (SearchView) v.findViewById(R.id.searchView);
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+
+                searchTraining(query);
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                searchTraining(newText);
+                return false;
+            }
+        });
+
+        searchView.setOnCloseListener(new SearchView.OnCloseListener() {
+            @Override
+            public boolean onClose() {
+                searchTraining("");
+                return false;
+            }
+        });
+
+
         fab = (FloatingActionButton) v.findViewById(R.id.fab);
         frameLayout = v.findViewById(R.id.frame_layout);
         recyclerView = (RecyclerView) v.findViewById(R.id.recycler_view);
         swipeRefreshLayout = (SwipeRefreshLayout) v.findViewById(R.id.swipe_refresh_layout);
-        swipeRefreshLayout.setOnRefreshListener( new SwipeRefreshLayout.OnRefreshListener() {
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
                 getTrainings();
@@ -109,6 +161,7 @@ public class TrainingsFragment extends Fragment implements TrainingRecyclerItemT
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
 
             }
+
             @Override
             public void onChildDraw(Canvas c, RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
                 super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
@@ -118,6 +171,10 @@ public class TrainingsFragment extends Fragment implements TrainingRecyclerItemT
         rAdapter = new TrainingListAdapter(this.getContext(), trainings, new TrainingListAdapter.TrainingListAdapterListener() {
             @Override
             public void onIconClicked(int position) {
+                
+                InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(getView().getWindowToken(), 0);
+
                 Training training = trainings.get(position);
                 TrainingViewFragment trainingViewFragment = new TrainingViewFragment();
                 trainingViewFragment.training = training;
@@ -152,9 +209,9 @@ public class TrainingsFragment extends Fragment implements TrainingRecyclerItemT
         recyclerView.addItemDecoration(new DividerItemDecoration(getContext(), LinearLayoutManager.VERTICAL));
         recyclerView.setAdapter(rAdapter);
         swipeRefreshLayout.post(
-                new Runnable(){
+                new Runnable() {
                     @Override
-                    public void run(){
+                    public void run() {
                         getTrainings();
                     }
                 }
@@ -209,9 +266,15 @@ public class TrainingsFragment extends Fragment implements TrainingRecyclerItemT
             actionMode.invalidate();
         }
     }
+
+    private void searchTraining(String query) {
+        this.searchQuery = query;
+        getTrainings();
+    }
+
     /*
-    *  Choose a random
-    *  Color
+     *  Choose a random
+     *  Color
      */
     private int getRandomMaterialColor(String typeColor) {
         int returnColor = Color.GRAY;
@@ -284,30 +347,42 @@ public class TrainingsFragment extends Fragment implements TrainingRecyclerItemT
     }
 
 
-
     private void getTrainings() {
         swipeRefreshLayout.setRefreshing(true);
+        textshow.setVisibility(View.GONE);
         trainings.clear();
+
+        String country = spFilterByCountry.getSelectedItem().toString();
+
         try {
 
-        try{
-            new TrainingDataSync(getContext()).pollNewTrainings();
-        }catch(Exception e){}
+            try {
+                new TrainingDataSync(getContext()).pollNewTrainings();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
             DatabaseHelper databaseHelper = new DatabaseHelper(getContext());
-            List<Training> trainingList = new ArrayList<>();
+            List<Training> trainingList;
 
-            trainingList = databaseHelper.getTrainingsByCountry(sessionManagement
-                    .getUserDetails().get(SessionManagement.KEY_USER_COUNTRY));
-            trainingList = databaseHelper.getTrainings();
-            for (Training training:trainingList){
+
+            if (country.equalsIgnoreCase("any")) {
+                trainingList = databaseHelper.getTrainings();
+            } else {
+                trainingList = databaseHelper.getTrainingsByCountry(country);
+            }
+
+            for (Training training : trainingList) {
                 training.setColor(getRandomMaterialColor("400"));
-                trainings.add(training);
+                if (training.getTrainingName().toLowerCase().contains(searchQuery.toLowerCase())) {
+                    trainings.add(training);
+                }
             }
             rAdapter.notifyDataSetChanged();
             swipeRefreshLayout.setRefreshing(false);
-        } catch (Exception error){
+        } catch (Exception error) {
             Toast.makeText(getContext(), "No Trainings found", Toast.LENGTH_SHORT).show();
             textshow.setText("Trainings");
+            textshow.setVisibility(View.VISIBLE);
         }
         swipeRefreshLayout.setRefreshing(false);
     }
@@ -316,11 +391,11 @@ public class TrainingsFragment extends Fragment implements TrainingRecyclerItemT
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle("Trainings");
+        ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle("Trainings");
         setHasOptionsMenu(false);
     }
 
-    private boolean isConnected(){
+    private boolean isConnected() {
         return ConnectivityReceiver.isConnected();
     }
 
@@ -331,29 +406,8 @@ public class TrainingsFragment extends Fragment implements TrainingRecyclerItemT
      */
     @Override
     public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction, int position) {
-        if (viewHolder instanceof TrainingListAdapter.ListHolder){
-            String name = trainings.get(viewHolder.getAdapterPosition()).getTrainingName();
-            //incase of Undo
-            final Training deletedTraining = trainings.get(viewHolder.getAdapterPosition());
-            final int deletedIndex = viewHolder.getAdapterPosition();
+        if (viewHolder instanceof TrainingListAdapter.ListHolder) {
 
-            //remove the item from view
-            rAdapter.removeData(viewHolder.getAdapterPosition());
-
-            //Add Snackbar info plus an action
-            // showing snack bar with Undo option
-            Snackbar snackbar = Snackbar
-                    .make(frameLayout, name + " removed from cart!", Snackbar.LENGTH_LONG);
-            snackbar.setAction("UNDO", new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-
-                    // undo is selected, restore the deleted item
-                    rAdapter.restoreItem(deletedTraining, deletedIndex);
-                }
-            });
-            snackbar.setActionTextColor(Color.YELLOW);
-            snackbar.show();
         }
     }
 }

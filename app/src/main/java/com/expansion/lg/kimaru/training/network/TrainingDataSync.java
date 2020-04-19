@@ -436,7 +436,10 @@ public class TrainingDataSync {
                 try{
                     JSONArray results = new JSONObject(json).getJSONArray(session.getTrainingExamResultsJSONRoot());
                     for (int x=0; x < results.length(); x++){
-                        databaseHelper.trainingExamResultFromJson(results.getJSONObject(x));
+                        JSONObject result = results.getJSONObject(x);
+                        result.put(DatabaseHelper.SYNCED, Constants.STATUS_SYNCED);
+                        Log.e("Upsteam", result.toString());
+                        databaseHelper.trainingExamResultFromJson(result);
                     }
                 }catch (Exception e){
                     Log.d("TREMAPEXAMS", "ERROR TRAINING EXAM RESULTS");

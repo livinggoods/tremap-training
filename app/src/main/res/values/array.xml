@@ -40,4 +40,9 @@
         <item name="grey_500" type="color">#9e9e9e</item>
         <item name="blue_grey_500" type="color">#607d8b</item>
     </array>
+    <array name="filter_by_country">
+        <item name="any">Any</item>
+        <item name="KE">KE</item>
+        <item name="UG">UG</item>
+    </array>
 </resources>

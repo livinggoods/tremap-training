@@ -51,6 +51,7 @@ public class SessionManagement {
     public static final String KEY_USERID = "userid";
     public static final String KEY_USER_COUNTRY = "country";
 
+    public static final String PREF_FILTER_BY_COUNTRY = "filter_by_country";
 
     public String getApiUrl(){
         String url = this.getCloudUrl();
@@ -73,6 +74,15 @@ public class SessionManagement {
         this.context = context;
         pref = context.getSharedPreferences(PREF_NAME, PRIVATE_MODE);
         editor = pref.edit();
+    }
+
+    public void setUserFilterByCountry(int country) {
+        editor.putInt(PREF_FILTER_BY_COUNTRY, country);
+        editor.commit();
+    }
+
+    public int getUserFilterByCountry() {
+        return pref.getInt(PREF_FILTER_BY_COUNTRY, 0);
     }
 
     public void saveCloudUrl(String cloudUrl){

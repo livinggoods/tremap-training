@@ -40,7 +40,7 @@ import java.util.List;
 
 public class TraineeListAdapter extends RecyclerView.Adapter<TraineeListAdapter.ListHolder> implements Filterable {
     private Context context;
-    private List<TrainingTrainee> trainees;
+    public List<TrainingTrainee> trainees;
     private TrainingTraineeListAdapterListener listener;
     private SparseBooleanArray selectedItems, selectedItemsIndex;
     private boolean reverseAllActions = false;
