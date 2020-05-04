@@ -191,13 +191,15 @@
                 <TextView
                     android:textStyle="bold"
                     android:layout_gravity="center_horizontal"
-                    android:layout_width="@dimen/training_p_width"
-                    android:layout_height="@dimen/training_p_height"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="4"
                     android:text="Attendance"/>
                 <TextView
                     android:textStyle="bold"
                     android:layout_gravity="center_vertical"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
+                    android:layout_weight="6"
                     android:layout_height="wrap_content"
                     android:paddingLeft="20dp"
                     android:id="@+id/trainingAttendance"
@@ -211,16 +213,17 @@
                 android:layout_height="wrap_content">
                 <TextView
                     android:textStyle="bold"
-                    android:textAlignment="center"
                     android:layout_gravity="center_vertical"
-                    android:layout_width="@dimen/training_p_width"
-                    android:layout_height="@dimen/training_p_height"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="4"
                     android:text="Lead Trainer"/>
                 <TextView
                     android:textStyle="bold"
                     android:id="@+id/trainingLeadTrainer"
                     android:layout_gravity="center_vertical"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
+                    android:layout_weight="6"
                     android:layout_height="wrap_content"
                     android:paddingLeft="20dp"
                     android:text="Not set"/>
@@ -230,24 +233,31 @@
                 android:layout_marginTop="25dp"
                 android:orientation="horizontal"
                 android:paddingLeft="25dp"
-                android:id="@+id/trainingExamsView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
                 <TextView
                     android:textStyle="bold"
-                    android:textAlignment="center"
-                    android:layout_gravity="center_vertical"
-                    android:layout_width="@dimen/training_p_width"
-                    android:layout_height="@dimen/training_p_height"
-                    android:text="Training Exams"/>
-                <TextView
-                    android:textStyle="bold"
-                    android:id="@+id/trainingExams"
-                    android:layout_gravity="center_vertical"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:paddingLeft="20dp"
-                    android:text="Not set"/>
+                    android:layout_weight="4"
+                    android:layout_gravity="center_vertical"
+                    android:text="Training Exams"/>
+
+                <LinearLayout
+                    android:layout_weight="6"
+                    android:paddingLeft="25dp"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content">
+
+                    <Button
+                        android:id="@+id/trainingExamsView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingLeft="20dp"
+                        android:text="View Exams >>"/>
+
+                </LinearLayout>
+
             </LinearLayout>
 
             <!--<LinearLayout

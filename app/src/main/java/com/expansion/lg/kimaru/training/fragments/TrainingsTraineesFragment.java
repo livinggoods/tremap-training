@@ -188,7 +188,7 @@ public class TrainingsTraineesFragment extends Fragment implements TraineeRecycl
 
             @Override
             public void onMessageRowClicked(int position) {
-                TrainingTrainee trainee = trainees.get(position);
+                TrainingTrainee trainee = rAdapter.trainees.get(position); // trainees.get(position);
                 // Show Trainee Profile
                 TraineeDetailsFragment traineeDetailsFragment = new TraineeDetailsFragment();
                 traineeDetailsFragment.trainingTrainee = trainee;
